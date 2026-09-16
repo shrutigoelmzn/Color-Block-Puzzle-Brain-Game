@@ -315,7 +315,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
 
             soundManager.playLineClear(totalLinesCleared)
-            if (newCombo >= 2) {
+            if (totalLinesCleared >= 2) {
+                hapticManager.vibrateMultiLineClear(totalLinesCleared)
+                if (newCombo >= 2) {
+                    soundManager.playCombo(newCombo)
+                }
+            } else if (newCombo >= 2) {
                 soundManager.playCombo(newCombo)
                 hapticManager.vibrateCombo(newCombo)
             } else {
@@ -340,15 +345,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val finalTray = if (isTrayEmpty) {
             blockGenerator.generateTray(finalBoard, newScore)
         } else {
-            // Ensure only valid blocks show in options:
-            // If any remaining shape can no longer fit on the updated board, replace it with a shape that fits!
-            updatedShapes.map { shape ->
-                if (shape != null && !MoveFinder.canPlaceShapeAnywhere(finalBoard, shape)) {
-                    blockGenerator.findFittingShape(finalBoard)
-                } else {
-                    shape
-                }
-            }
+            updatedShapes
         }
 
         // Check game-over condition
@@ -412,11 +409,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Clear effect event auto-dismiss after short burst
+        // Clear effect event auto-dismiss after particle burst
         if (clearEvent != null) {
+            val eventId = clearEvent.id
             viewModelScope.launch {
-                delay(600)
-                _gameState.update { it.copy(activeClearEffect = null) }
+                delay(1050)
+                _gameState.update {
+                    if (it.activeClearEffect?.id == eventId) it.copy(activeClearEffect = null) else it
+                }
             }
         }
 

@@ -59,6 +59,24 @@ class HapticFeedbackManager(
     }
 
     /**
+     * Tactile punch for simultaneous multi-line clears (double, triple, quad+).
+     */
+    fun vibrateMultiLineClear(linesCount: Int) {
+        if (!isHapticsEnabled || vibrator?.hasVibrator() != true) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val timings = when (linesCount) {
+                2 -> longArrayOf(0, 35, 35, 60)
+                3 -> longArrayOf(0, 35, 25, 45, 25, 75)
+                else -> longArrayOf(0, 40, 20, 50, 20, 70, 20, 95)
+            }
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(85)
+        }
+    }
+
+    /**
      * Tiered haptic vibration for combo completions:
      * Escalates in tactile rhythm and intensity as combo increases.
      */

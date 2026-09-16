@@ -263,4 +263,55 @@ class GameEngineTest {
             perfectFitsOnCrowded >= 2
         )
     }
+
+    @Test
+    fun multiLineClearDetectionAndEventProperties() {
+        // Test single line clear
+        val singleClear = com.example.domain.model.ClearEffectEvent(
+            rows = listOf(2),
+            cols = emptyList(),
+            scoreGained = 100,
+            combo = 1,
+            centerRow = 2f,
+            centerCol = 3.5f
+        )
+        assertEquals(1, singleClear.totalLines)
+        assertFalse(singleClear.isMultiLine)
+
+        // Test double simultaneous line clear
+        val doubleClear = com.example.domain.model.ClearEffectEvent(
+            rows = listOf(1, 2),
+            cols = emptyList(),
+            scoreGained = 300,
+            combo = 2,
+            centerRow = 1.5f,
+            centerCol = 3.5f
+        )
+        assertEquals(2, doubleClear.totalLines)
+        assertTrue(doubleClear.isMultiLine)
+
+        // Test cross simultaneous clear (1 row + 1 col = 2 lines)
+        val crossClear = com.example.domain.model.ClearEffectEvent(
+            rows = listOf(3),
+            cols = listOf(4),
+            scoreGained = 300,
+            combo = 1,
+            centerRow = 3f,
+            centerCol = 4f
+        )
+        assertEquals(2, crossClear.totalLines)
+        assertTrue(crossClear.isMultiLine)
+
+        // Test triple simultaneous clear
+        val tripleClear = com.example.domain.model.ClearEffectEvent(
+            rows = listOf(0, 1),
+            cols = listOf(2),
+            scoreGained = 660,
+            combo = 1,
+            centerRow = 0.5f,
+            centerCol = 2f
+        )
+        assertEquals(3, tripleClear.totalLines)
+        assertTrue(tripleClear.isMultiLine)
+    }
 }

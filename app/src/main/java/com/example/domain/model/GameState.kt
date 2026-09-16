@@ -10,13 +10,17 @@ data class UndoSnapshot(
 )
 
 data class ClearEffectEvent(
+    val id: Long = System.currentTimeMillis(),
     val rows: List<Int>,
     val cols: List<Int>,
     val scoreGained: Int,
     val combo: Int,
     val centerRow: Float,
     val centerCol: Float
-)
+) {
+    val totalLines: Int get() = rows.size + cols.size
+    val isMultiLine: Boolean get() = totalLines >= 2
+}
 
 data class ComboBannerEvent(
     val id: Long = System.currentTimeMillis(),

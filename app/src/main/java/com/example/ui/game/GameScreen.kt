@@ -339,10 +339,18 @@ fun GameScreen(
                     }
                 }
 
-                // 1-Second Auto-dismissing Combo Banner over board
-                ComboBoardOverlay(
-                    banner = gameState.activeComboBanner
+                // Satisfying particle effects and visual pop-ups on the grid for simultaneous multi-line clears
+                MultiLineClearOverlay(
+                    clearEffect = gameState.activeClearEffect,
+                    theme = theme
                 )
+
+                // 1-Second Auto-dismissing Combo Banner over board (when not already showing multi-line clear)
+                if (gameState.activeClearEffect?.isMultiLine != true) {
+                    ComboBoardOverlay(
+                        banner = gameState.activeComboBanner
+                    )
+                }
             }
 
             // BOTTOM: 3-Shape Tray & Action Buttons

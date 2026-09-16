@@ -102,10 +102,10 @@ private fun ShapeSlot(
             .clip(RoundedCornerShape(16.dp))
             .background(theme.boardBg.copy(alpha = if (isHighlighted) 0.95f else 0.5f))
             .border(
-                width = if (isHighlighted) 2.dp else if (isPerfectFit && !isDraggingThis) 1.5.dp else 1.dp,
+                width = if (isHighlighted) 2.dp else if (canFit && isPerfectFit && !isDraggingThis) 1.5.dp else 1.dp,
                 color = when {
                     isHighlighted -> theme.accentColor
-                    isPerfectFit && !isDraggingThis -> Color(0xFF10B981).copy(alpha = 0.5f)
+                    canFit && isPerfectFit && !isDraggingThis -> Color(0xFF10B981).copy(alpha = 0.5f)
                     else -> theme.cardBorder.copy(alpha = 0.3f)
                 },
                 shape = RoundedCornerShape(16.dp)

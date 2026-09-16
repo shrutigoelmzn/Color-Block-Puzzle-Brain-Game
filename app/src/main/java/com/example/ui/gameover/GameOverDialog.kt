@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -227,54 +228,40 @@ fun GameOverDialog(
                             onClick = onReviveWithAd,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp),
+                                .height(52.dp)
+                                .testTag("revive_ad_button"),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF10B981),
                                 contentColor = Color.White
                             ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color.White.copy(alpha = 0.25f),
+                                modifier = Modifier.padding(end = 8.dp)
                             ) {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color.White.copy(alpha = 0.25f),
-                                    modifier = Modifier.padding(end = 8.dp)
-                                ) {
-                                    Text(
-                                        text = "AD",
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 10.sp,
-                                        color = Color.White
-                                    )
-                                }
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
+                                Text(
+                                    text = "AD",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 10.sp,
+                                    color = Color.White
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = if (gameState.revivesUsed == 0) "EXTRA LIFE (+ CLEAR 2 LINES)"
-                                        else "FINAL LIFE (+ CLEAR 2 LINES)",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                    Text(
-                                        text = if (gameState.revivesUsed == 0) "Watch ad to revive • Life 1 of 2"
-                                        else "Watch ad • Goal 80%+ scored! • Life 2 of 2",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontSize = 10.sp,
-                                        color = Color.White.copy(alpha = 0.9f)
-                                    )
-                                }
                             }
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "REVIVE",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                     } else {
