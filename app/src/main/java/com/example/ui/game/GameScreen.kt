@@ -602,6 +602,17 @@ fun GameScreen(
                         viewModel.reviveWithRewardedAd()
                     }
                 },
+                onExtendTimeWithAd = {
+                    val activity = context as? Activity
+                    if (activity != null) {
+                        AdManager.showRewardedAd(
+                            activity = activity,
+                            onUserEarnedReward = { viewModel.extendTimeWithRewardedAd(10) }
+                        )
+                    } else {
+                        viewModel.extendTimeWithRewardedAd(10)
+                    }
+                },
                 onHome = { onNavigateBack() }
             )
         }

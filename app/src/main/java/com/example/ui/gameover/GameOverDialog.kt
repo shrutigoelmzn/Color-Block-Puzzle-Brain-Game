@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -50,6 +51,7 @@ fun GameOverDialog(
     theme: GameTheme,
     onRestart: () -> Unit,
     onReviveWithAd: () -> Unit,
+    onExtendTimeWithAd: () -> Unit = {},
     onHome: () -> Unit
 ) {
     Dialog(
@@ -221,6 +223,50 @@ fun GameOverDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Extra Time (+10s) via Rewarded Ad Section (when time finished in Timed mode without reaching target)
+                if (gameState.canTakeTimeExtensionWithAd) {
+                    Button(
+                        onClick = onExtendTimeWithAd,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .testTag("extend_time_ad_button"),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF0284C7),
+                            contentColor = Color.White
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color.White.copy(alpha = 0.25f),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "AD",
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp,
+                                color = Color.White
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "+10 SECONDS",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Revive / Extra Life via Rewarded Ad Section
                 if (gameState.revivesUsed < gameState.maxRevives) {
                     if (gameState.canTakeReviveWithAd) {
@@ -264,40 +310,8 @@ fun GameOverDialog(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                    } else {
-                        // 2nd Life is locked because player hasn't reached 80% of the target score
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            color = theme.cellEmptyBg,
-                            border = BorderStroke(1.dp, theme.cardBorder)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = theme.textColorSecondary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "2nd Life Locked",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = theme.textColorSecondary
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
                     }
+                    // When not near target score (e.g. < 80%), the 2nd life button is completely hidden as requested
                 } else {
                     // Both revives used
                     Surface(

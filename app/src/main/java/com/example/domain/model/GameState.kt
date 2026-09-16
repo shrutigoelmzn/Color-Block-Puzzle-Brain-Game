@@ -69,9 +69,12 @@ data class GameState(
     val hasUsedContinue: Boolean = false,
     val revivesUsed: Int = 0,
     val maxRevives: Int = 2,
+    val timeExtensionsUsed: Int = 0,
+    val maxTimeExtensions: Int = 2,
     val activeHint: HintMove? = null,
     val lastUndoSnapshot: UndoSnapshot? = null,
     val timeRemainingSeconds: Int = 120, // for Timed Mode
+    val isTimeOutGameOver: Boolean = false,
     val activeClearEffect: ClearEffectEvent? = null,
     val activeComboBanner: ComboBannerEvent? = null,
     val floatingScores: List<FloatingScoreEvent> = emptyList(),
@@ -96,7 +99,7 @@ data class GameState(
 
     /**
      * Can the player take a revive life by watching a rewarded ad?
-     * Rule: Max 2 revives per game.
+     * Rule: Max 2 revives per level.
      * 1st revive: Can be taken any time.
      * 2nd revive: ONLY available if player scored at least 80% of target score.
      */
@@ -106,4 +109,15 @@ data class GameState(
             if (revivesUsed == 0) return true
             return isNearTargetScore
         }
+
+    /**
+     * Rewarded ad for extra time:
+     * Available if in TIMED mode, game over occurred due to time finishing,
+     * target was not reached, and player hasn't exceeded the max time extensions.
+     */
+    val canTakeTimeExtensionWithAd: Boolean
+        get() = mode == GameMode.TIMED &&
+                isTimeOutGameOver &&
+                !isLevelCompleted &&
+                timeExtensionsUsed < maxTimeExtensions
 }

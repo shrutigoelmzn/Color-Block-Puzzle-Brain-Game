@@ -206,6 +206,20 @@ class GameEngineTest {
         assertEquals(16, board.countOccupied())
         val cleared = MoveFinder.clearTwoLines(board)
         assertEquals(0, cleared.countOccupied())
+
+        // Test time extension rewarded ad: available when time expired in TIMED mode without reaching target
+        val timedStateExpired = stateInitial.copy(
+            isGameOver = true,
+            isTimeOutGameOver = true,
+            isLevelCompleted = false,
+            timeRemainingSeconds = 0,
+            timeExtensionsUsed = 0
+        )
+        assertTrue(timedStateExpired.canTakeTimeExtensionWithAd)
+
+        // After max time extensions used (2), time extension is no longer available
+        val timedStateMaxExtensions = timedStateExpired.copy(timeExtensionsUsed = 2)
+        assertFalse(timedStateMaxExtensions.canTakeTimeExtensionWithAd)
     }
 
     @Test

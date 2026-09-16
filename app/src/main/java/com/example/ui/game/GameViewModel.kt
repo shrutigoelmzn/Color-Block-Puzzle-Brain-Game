@@ -132,7 +132,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 freeUndosRemaining = 1,
                 hasUsedContinue = false,
                 revivesUsed = 0,
+                timeExtensionsUsed = 0,
                 timeRemainingSeconds = timedLevelData?.timeLimitSeconds ?: 0,
+                isTimeOutGameOver = false,
                 lastUndoSnapshot = null,
                 activeHint = null
             )
@@ -155,7 +157,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (!_gameState.value.isPaused) {
                     _gameState.update { it.copy(timeRemainingSeconds = it.timeRemainingSeconds - 1) }
                     if (_gameState.value.timeRemainingSeconds <= 0) {
-                        endGame()
+                        endGame(isTimeOut = true)
                     }
                 }
             }
@@ -475,8 +477,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     isGameOver = false,
                     isPaused = false,
                     revivesUsed = 0,
+                    timeExtensionsUsed = 0,
                     freeUndosRemaining = maxOf(1, it.freeUndosRemaining),
                     timeRemainingSeconds = nextLevel.timeLimitSeconds,
+                    isTimeOutGameOver = false,
                     lastUndoSnapshot = null,
                     activeHint = null
                 )
@@ -505,8 +509,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     isGameOver = false,
                     isPaused = false,
                     revivesUsed = 0,
+                    timeExtensionsUsed = 0,
                     freeUndosRemaining = maxOf(1, it.freeUndosRemaining),
                     timeRemainingSeconds = currentLevel.timeLimitSeconds,
+                    isTimeOutGameOver = false,
                     lastUndoSnapshot = null,
                     activeHint = null
                 )
@@ -602,9 +608,38 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         hapticManager.vibrateCombo(2)
     }
 
-    private fun endGame() {
+    /**
+     * Extends time by 10 seconds when the player watches a rewarded ad
+     * after time ran out in Timed Rush mode.
+     */
+    fun extendTimeWithRewardedAd(seconds: Int = 10) {
         val state = _gameState.value
-        _gameState.update { it.copy(isGameOver = true) }
+        if (!state.canTakeTimeExtensionWithAd) return
+
+        soundManager.playReward()
+        hapticManager.vibrateHighScore()
+
+        _gameState.update {
+            it.copy(
+                isGameOver = false,
+                isPaused = false,
+                isTimeOutGameOver = false,
+                timeRemainingSeconds = it.timeRemainingSeconds + seconds,
+                timeExtensionsUsed = it.timeExtensionsUsed + 1
+            )
+        }
+
+        startTimedModeCountdown()
+    }
+
+    private fun endGame(isTimeOut: Boolean = false) {
+        val state = _gameState.value
+        _gameState.update {
+            it.copy(
+                isGameOver = true,
+                isTimeOutGameOver = isTimeOut
+            )
+        }
         soundManager.playGameOver()
         hapticManager.vibrateGameOver()
 
