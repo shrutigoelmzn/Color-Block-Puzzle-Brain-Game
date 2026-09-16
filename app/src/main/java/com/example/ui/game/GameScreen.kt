@@ -1,0 +1,586 @@
+package com.example.ui.game
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.example.domain.model.BlockShape
+import com.example.domain.model.GameMode
+import com.example.ui.components.BlockRenderUtils
+import com.example.ui.daily.DailyChallengeCompleteDialog
+import com.example.ui.game.LevelCompleteDialog
+import com.example.ui.gameover.GameOverDialog
+import com.example.ui.theme.LocalThemeIsDark
+import kotlin.math.roundToInt
+
+@Composable
+fun GameScreen(
+    viewModel: GameViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val gameState by viewModel.gameState.collectAsState()
+    val isDark = LocalThemeIsDark.current
+    val rawTheme by viewModel.activeTheme.collectAsState()
+    val theme = remember(rawTheme, isDark) { rawTheme.forMode(isDark) }
+    val dailyChallenge by viewModel.dailyChallenge.collectAsState()
+
+    var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var boardCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var dragPreview by remember { mutableStateOf<DragPreviewState?>(null) }
+    var draggingShapeIndex by remember { mutableStateOf<Int?>(null) }
+    var draggingShape by remember { mutableStateOf<BlockShape?>(null) }
+    var dragTouchPositionInRoot by remember { mutableStateOf<Offset?>(null) }
+    val density = LocalDensity.current
+
+    // Infinite transition for pulsing combo banner
+    val infiniteTransition = rememberInfiniteTransition(label = "combo")
+    val comboScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "comboScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onGloballyPositioned { rootCoordinates = it }
+            .background(
+                Brush.verticalGradient(
+                    listOf(theme.bgGradientStart, theme.bgGradientEnd)
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // TOP BAR: Navigation, Mode, Score & Best
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        viewModel.pauseGame()
+                        onNavigateBack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back to Menu",
+                            tint = theme.textColorPrimary
+                        )
+                    }
+
+                    // Score Display
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "SCORE",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = theme.textColorSecondary,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "${gameState.score}",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Black,
+                            color = theme.textColorPrimary
+                        )
+                    }
+
+                    // Best Score & Pause button
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "BEST",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF9800),
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                text = "${gameState.bestScore}",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF9800)
+                            )
+                        }
+
+                        IconButton(onClick = { viewModel.pauseGame() }) {
+                            Icon(
+                                imageVector = Icons.Default.Pause,
+                                contentDescription = "Pause",
+                                tint = theme.textColorPrimary
+                            )
+                        }
+                    }
+                }
+
+                // SUB HEADER: Mode, Timer, or Challenge Objective
+                if (gameState.mode == GameMode.TIMED) {
+                    val timedLevel = gameState.currentTimedLevel
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (timedLevel != null) {
+                            val diffColor = Color(timedLevel.difficulty.colorHex)
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = diffColor.copy(alpha = 0.16f),
+                                border = BorderStroke(1.dp, diffColor.copy(alpha = 0.4f))
+                            ) {
+                                Text(
+                                    text = "LVL ${timedLevel.levelNumber} • ${timedLevel.difficulty.label.uppercase()}",
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 11.sp,
+                                    color = diffColor
+                                )
+                            }
+
+                            Text(
+                                text = "Goal: ${gameState.score}/${timedLevel.targetScore} • Lines: ${gameState.linesClearedInGame}/${timedLevel.targetLines}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = theme.textColorSecondary
+                            )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Timer,
+                                contentDescription = "Timer",
+                                tint = if (gameState.timeRemainingSeconds <= 15) Color(0xFFFF5252) else Color(0xFF00E5FF),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${gameState.timeRemainingSeconds}s",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 13.sp,
+                                color = if (gameState.timeRemainingSeconds <= 15) Color(0xFFEF4444) else theme.textColorPrimary
+                            )
+                        }
+                    }
+                } else if (gameState.mode == GameMode.CHALLENGE && dailyChallenge != null) {
+                    val challenge = dailyChallenge!!
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF2E7D32).copy(alpha = 0.5f))
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (challenge.isCompleted || gameState.isDailyChallengeCompleted) "Daily Challenge Complete! ⭐"
+                                else "Goal: ${gameState.score}/${challenge.targetScore} pts | ${gameState.linesClearedInGame}/${challenge.targetLines} lines | ${gameState.highestComboInGame}/${challenge.targetCombos}x combo",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFFA5D6A7)
+                            )
+                        }
+                    }
+                }
+
+                // COMBO BANNER (Animated pill when combo >= 2)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(34.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (gameState.combo >= 2) {
+                        Box(
+                            modifier = Modifier
+                                .scale(comboScale)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFFFF8F00), Color(0xFFFFD54F))
+                                    )
+                                )
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "COMBO x${gameState.combo}! 🔥",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 14.sp,
+                                color = Color(0xFF3E1F00)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // CENTER: 8x8 Game Board with Stacked Combo & Floating Score Overlays
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false),
+                contentAlignment = Alignment.Center
+            ) {
+                GameBoardCanvas(
+                    board = gameState.board,
+                    theme = theme,
+                    activeHint = gameState.activeHint,
+                    activeClearEffect = gameState.activeClearEffect,
+                    dragPreview = dragPreview,
+                    recentlyPlacedCoords = gameState.recentlyPlacedCoords,
+                    clearingCoords = gameState.clearingCoords,
+                    onPositioned = { boardCoordinates = it }
+                )
+
+                // Floating score popups over board
+                val boardW = boardCoordinates?.size?.width?.toFloat() ?: 0f
+                val boardH = boardCoordinates?.size?.height?.toFloat() ?: 0f
+                if (boardW > 0f && boardH > 0f) {
+                    gameState.floatingScores.forEach { fEvent ->
+                        FloatingScoreItem(
+                            event = fEvent,
+                            boardWidthPx = boardW,
+                            boardHeightPx = boardH
+                        )
+                    }
+                }
+
+                // 1-Second Auto-dismissing Combo Banner over board
+                ComboBoardOverlay(
+                    banner = gameState.activeComboBanner
+                )
+            }
+
+            // BOTTOM: 3-Shape Tray & Action Buttons
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Tray with 3 blocks
+                ShapeTrayView(
+                    shapes = gameState.availableShapes,
+                    board = gameState.board,
+                    theme = theme,
+                    highlightedShapeIndex = gameState.activeHint?.shapeIndex,
+                    draggingShapeIndex = draggingShapeIndex,
+                    onDragStart = { shapeIndex, shape, localOffset, slotCoords ->
+                        if (gameState.isPaused || gameState.isGameOver) return@ShapeTrayView
+                        val root = rootCoordinates
+                        if (root != null && root.isAttached && slotCoords.isAttached) {
+                            val touchInRoot = root.localPositionOf(slotCoords, localOffset)
+                            draggingShapeIndex = shapeIndex
+                            draggingShape = shape
+                            dragTouchPositionInRoot = touchInRoot
+                            viewModel.userInteracted()
+
+                            val liftOffsetPx = with(density) { 75.dp.toPx() }
+                            dragPreview = calculateBoardTarget(
+                                shape = shape,
+                                touchPosInRoot = touchInRoot,
+                                rootCoords = root,
+                                boardCoords = boardCoordinates,
+                                board = gameState.board,
+                                liftOffsetPx = liftOffsetPx
+                            )
+                        }
+                    },
+                    onDragMove = { dragAmount ->
+                        val currentPos = dragTouchPositionInRoot
+                        val currentShape = draggingShape
+                        val root = rootCoordinates
+                        if (currentPos != null && currentShape != null && root != null && root.isAttached) {
+                            val newPos = currentPos + dragAmount
+                            dragTouchPositionInRoot = newPos
+
+                            val liftOffsetPx = with(density) { 75.dp.toPx() }
+                            dragPreview = calculateBoardTarget(
+                                shape = currentShape,
+                                touchPosInRoot = newPos,
+                                rootCoords = root,
+                                boardCoords = boardCoordinates,
+                                board = gameState.board,
+                                liftOffsetPx = liftOffsetPx
+                            )
+                        }
+                    },
+                    onDragEnd = {
+                        val preview = dragPreview
+                        val shapeIndex = draggingShapeIndex
+                        if (preview != null && preview.isValid && shapeIndex != null) {
+                            viewModel.placeShape(shapeIndex, preview.hoverRow, preview.hoverCol)
+                        }
+                        draggingShapeIndex = null
+                        draggingShape = null
+                        dragTouchPositionInRoot = null
+                        dragPreview = null
+                    },
+                    onDragCancel = {
+                        draggingShapeIndex = null
+                        draggingShape = null
+                        dragTouchPositionInRoot = null
+                        dragPreview = null
+                    }
+                )
+
+                // Bottom Action Bar: Undo, Hint, Coins Chip
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Undo Button
+                    BadgedBox(
+                        badge = {
+                            if (gameState.freeUndosRemaining > 0) {
+                                Badge(containerColor = Color(0xFF00E676)) {
+                                    Text("${gameState.freeUndosRemaining}")
+                                }
+                            }
+                        }
+                    ) {
+                        FilledTonalButton(
+                            onClick = { viewModel.undo() },
+                            enabled = !gameState.isPaused && !gameState.isGameOver && gameState.freeUndosRemaining > 0 && gameState.lastUndoSnapshot != null,
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Undo,
+                                contentDescription = "Undo",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Undo", fontSize = 13.sp)
+                        }
+                    }
+
+                    // Smart Hint Button
+                    FilledTonalButton(
+                        onClick = { viewModel.requestHint() },
+                        enabled = !gameState.isPaused && !gameState.isGameOver,
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = "Hint",
+                            tint = Color(0xFFFFD54F),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Hint", fontSize = 13.sp)
+                    }
+                }
+            }
+        }
+
+        // FLOATING DRAGGED SHAPE OVERLAY
+        if (draggingShape != null && dragTouchPositionInRoot != null) {
+            val shape = draggingShape!!
+            val touchPos = dragTouchPositionInRoot!!
+            val cellSize = if (boardCoordinates != null && boardCoordinates!!.isAttached) {
+                boardCoordinates!!.size.width.toFloat() / 8f
+            } else {
+                with(density) { 42.dp.toPx() }
+            }
+            val liftOffsetPx = with(density) { 75.dp.toPx() }
+
+            val shapeWidthPx = shape.width * cellSize
+            val shapeHeightPx = shape.height * cellSize
+
+            val shapeCenterX = touchPos.x
+            val shapeCenterY = touchPos.y - liftOffsetPx
+
+            val topLeftX = shapeCenterX - shapeWidthPx / 2f
+            val topLeftY = shapeCenterY - shapeHeightPx / 2f
+
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(topLeftX.roundToInt(), topLeftY.roundToInt())
+                    }
+                    .size(
+                        width = with(density) { shapeWidthPx.toDp() },
+                        height = with(density) { shapeHeightPx.toDp() }
+                    )
+                    .graphicsLayer {
+                        shadowElevation = 24f
+                        scaleX = 1.05f
+                        scaleY = 1.05f
+                    }
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val blockColors = theme.getBlockColor(shape.colorId)
+                    for (r in 0 until shape.height) {
+                        for (c in 0 until shape.width) {
+                            if (shape.isFilled(r, c)) {
+                                BlockRenderUtils.drawBlock(
+                                    drawScope = this,
+                                    topLeft = Offset(c * cellSize, r * cellSize),
+                                    size = Size(cellSize, cellSize),
+                                    colors = blockColors,
+                                    alpha = 0.95f
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // OVERLAYS & DIALOGS
+        if (gameState.isPaused) {
+            PauseDialog(
+                theme = theme,
+                score = gameState.score,
+                linesCleared = gameState.linesClearedInGame,
+                timeRemaining = if (gameState.mode == GameMode.TIMED) gameState.timeRemainingSeconds else null,
+                soundEnabled = viewModel.soundManager.isSoundEnabled,
+                hapticsEnabled = viewModel.hapticManager.isHapticsEnabled,
+                onResume = { viewModel.resumeGame() },
+                onRestart = { viewModel.startNewGame(gameState.mode) },
+                onToggleSound = { viewModel.toggleSound() },
+                onToggleHaptics = { viewModel.toggleHaptics() },
+                onHome = {
+                    viewModel.resumeGame()
+                    onNavigateBack()
+                }
+            )
+        }
+
+        if (gameState.isGameOver) {
+            GameOverDialog(
+                gameState = gameState,
+                theme = theme,
+                onRestart = {
+                    if (gameState.mode == GameMode.TIMED) {
+                        viewModel.retryCurrentTimedLevel()
+                    } else {
+                        viewModel.startNewGame(gameState.mode)
+                    }
+                },
+                onContinue = { viewModel.useContinue() },
+                onHome = { onNavigateBack() }
+            )
+        }
+
+        // Timed Rush Level Complete Dialog
+        if (gameState.isLevelCompleted && gameState.currentTimedLevel != null) {
+            LevelCompleteDialog(
+                completedLevel = gameState.currentTimedLevel!!,
+                theme = theme,
+                score = gameState.score,
+                linesCleared = gameState.linesClearedInGame,
+                highestCombo = gameState.highestComboInGame,
+                rewardCoins = gameState.completedLevelReward,
+                onNextLevel = { viewModel.startNextTimedLevel() },
+                onHome = { onNavigateBack() }
+            )
+        }
+
+        // Daily Challenge Complete Dialog
+        if (gameState.isDailyChallengeCompleted && dailyChallenge != null) {
+            DailyChallengeCompleteDialog(
+                challenge = dailyChallenge!!,
+                rewardCoins = gameState.dailyRewardCoins,
+                theme = theme,
+                onHome = {
+                    viewModel.dismissDailyCelebration()
+                    onNavigateBack()
+                }
+            )
+        }
+    }
+}

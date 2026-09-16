@@ -1,0 +1,173 @@
+package com.example
+
+import com.example.domain.engine.BlockGenerator
+import com.example.domain.engine.ComboManager
+import com.example.domain.engine.DailyChallengeGenerator
+import com.example.domain.engine.LineClearEngine
+import com.example.domain.engine.MoveFinder
+import com.example.domain.engine.PlacementEngine
+import com.example.domain.engine.ScoreCalculator
+import com.example.domain.model.BlockShape
+import com.example.domain.model.Board
+import com.example.domain.model.Cell
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class GameEngineTest {
+
+    @Test
+    fun shapeFitsOnEmptyBoard() {
+        val board = Board.empty()
+        val shape = BlockShape.square2()
+        assertTrue(PlacementEngine.canPlace(board, shape, 0, 0))
+        assertTrue(PlacementEngine.canPlace(board, shape, 6, 6))
+    }
+
+    @Test
+    fun shapeRejectedOutsideBoard() {
+        val board = Board.empty()
+        val shape = BlockShape.square2()
+        // Out of bounds on right
+        assertFalse(PlacementEngine.canPlace(board, shape, 0, 7))
+        // Out of bounds on bottom
+        assertFalse(PlacementEngine.canPlace(board, shape, 7, 0))
+        // Negative coordinates
+        assertFalse(PlacementEngine.canPlace(board, shape, -1, 0))
+    }
+
+    @Test
+    fun shapeRejectedOnOccupiedCells() {
+        var board = Board.empty()
+        board = board.withCell(2, 2, Cell(colorId = 1))
+
+        val shape = BlockShape.square2()
+        // (2,2) is covered if placed at (1,1), (1,2), (2,1), or (2,2)
+        assertFalse(PlacementEngine.canPlace(board, shape, 2, 2))
+        assertFalse(PlacementEngine.canPlace(board, shape, 1, 1))
+
+        // But should fit at (3,3)
+        assertTrue(PlacementEngine.canPlace(board, shape, 3, 3))
+    }
+
+    @Test
+    fun fullRowDetectionAndClear() {
+        var board = Board.empty()
+        // Fill row 3
+        for (c in 0 until 8) {
+            board = board.withCell(3, c, Cell(colorId = 2))
+        }
+
+        val completed = LineClearEngine.findCompletedLines(board)
+        assertEquals(listOf(3), completed.rows)
+        assertTrue(completed.cols.isEmpty())
+
+        val clearedBoard = LineClearEngine.clearLines(board, completed.rows, completed.cols)
+        for (c in 0 until 8) {
+            assertTrue(clearedBoard.isEmpty(3, c))
+        }
+    }
+
+    @Test
+    fun fullColumnDetectionAndClear() {
+        var board = Board.empty()
+        // Fill column 5
+        for (r in 0 until 8) {
+            board = board.withCell(r, 5, Cell(colorId = 3))
+        }
+
+        val completed = LineClearEngine.findCompletedLines(board)
+        assertTrue(completed.rows.isEmpty())
+        assertEquals(listOf(5), completed.cols)
+
+        val clearedBoard = LineClearEngine.clearLines(board, completed.rows, completed.cols)
+        for (r in 0 until 8) {
+            assertTrue(clearedBoard.isEmpty(r, 5))
+        }
+    }
+
+    @Test
+    fun multipleSimultaneousLineClears() {
+        var board = Board.empty()
+        // Fill row 2 and col 4 (cross shape)
+        for (i in 0 until 8) {
+            board = board.withCell(2, i, Cell(colorId = 1))
+            board = board.withCell(i, 4, Cell(colorId = 2))
+        }
+
+        val completed = LineClearEngine.findCompletedLines(board)
+        assertEquals(listOf(2), completed.rows)
+        assertEquals(listOf(4), completed.cols)
+        assertEquals(2, completed.totalLines)
+
+        val clearedBoard = LineClearEngine.clearLines(board, completed.rows, completed.cols)
+        assertTrue(clearedBoard.isEmpty(2, 4))
+        assertTrue(clearedBoard.isEmpty(2, 0))
+        assertTrue(clearedBoard.isEmpty(0, 4))
+    }
+
+    @Test
+    fun scoreAndComboCalculation() {
+        val shape = BlockShape.square2() // 4 blocks
+        assertEquals(40, ScoreCalculator.calculatePlacementScore(shape))
+
+        // Line clears
+        assertEquals(100, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 1))
+        assertEquals(300, ScoreCalculator.calculateLineClearScore(linesCount = 2, combo = 1))
+        // Combo 3 with 1 line: 100 + (3-1)*60 = 220
+        assertEquals(220, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 3))
+
+        // Combo increment and reset
+        assertEquals(1, ComboManager.updateCombo(currentCombo = 0, linesCleared = 1))
+        assertEquals(2, ComboManager.updateCombo(currentCombo = 1, linesCleared = 1))
+        assertEquals(0, ComboManager.updateCombo(currentCombo = 3, linesCleared = 0))
+    }
+
+    @Test
+    fun gameOverDetectionAndHintSolver() {
+        // Almost completely filled board with no 2x2 holes
+        var board = Board.empty()
+        for (r in 0 until 8) {
+            for (c in 0 until 8) {
+                // Checkerboard occupancy
+                if ((r + c) % 2 == 0) {
+                    board = board.withCell(r, c, Cell(colorId = 0))
+                }
+            }
+        }
+
+        // Square 2x2 cannot fit in checkerboard
+        val square = BlockShape.square2()
+        assertFalse(MoveFinder.hasAnyLegalMove(board, listOf(square)))
+
+        // Dot 1x1 CAN fit in the empty checkerboard cells
+        val dot = BlockShape.dot()
+        assertTrue(MoveFinder.hasAnyLegalMove(board, listOf(dot)))
+
+        // Hint finder returns legal move
+        val hint = MoveFinder.findHint(board, listOf(square, dot))
+        assertNotNull(hint)
+        assertEquals(1, hint?.shapeIndex) // The dot at index 1
+        assertTrue(PlacementEngine.canPlace(board, dot, hint!!.targetRow, hint.targetCol))
+    }
+
+    @Test
+    fun seededGeneratorAndDailyChallengeAreDeterministic() {
+        val gen1 = BlockGenerator.seeded(12345L)
+        val gen2 = BlockGenerator.seeded(12345L)
+        val emptyBoard = Board.empty()
+
+        val tray1 = gen1.generateTray(emptyBoard, 0)
+        val tray2 = gen2.generateTray(emptyBoard, 0)
+
+        assertEquals(tray1.map { it.id }, tray2.map { it.id })
+
+        val daily1 = DailyChallengeGenerator.generateForDate("2026-09-15")
+        val daily2 = DailyChallengeGenerator.generateForDate("2026-09-15")
+        assertEquals(daily1.title, daily2.title)
+        assertEquals(daily1.targetScore, daily2.targetScore)
+        assertEquals(daily1.targetLines, daily2.targetLines)
+    }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Color Block Puzzle",
+  "description": "Offline color block puzzle game with Light/Dark themes, progressive Timed Rush levels, daily challenges, combos, and Material 3 design.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

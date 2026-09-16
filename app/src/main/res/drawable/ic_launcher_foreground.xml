@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Golden Crown on Top -->
+    <path
+        android:pathData="M44,38 L42,28 L48,32 L54,26 L60,32 L66,28 L64,38 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="42"
+                android:startY="26"
+                android:endX="66"
+                android:endY="38"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FFE082" />
+                <item android:offset="0.5" android:color="#FFB300" />
+                <item android:offset="1.0" android:color="#FF8F00" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Crown Jewels -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M53,26 A1,1 0 1,1 55,26 A1,1 0 1,1 53,26" />
+    <path
+        android:fillColor="#FF5252"
+        android:pathData="M41,28 A1,1 0 1,1 43,28 A1,1 0 1,1 41,28" />
+    <path
+        android:fillColor="#FF5252"
+        android:pathData="M65,28 A1,1 0 1,1 67,28 A1,1 0 1,1 65,28" />
+
+    <!-- Sparkle Left -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M26,38 C26,35 24,33 21,33 C24,33 26,31 26,28 C26,31 28,33 31,33 C28,33 26,35 26,38 Z" />
+
+    <!-- Sparkle Right -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M83,35 C83,32 81,30 78,30 C81,30 83,28 83,25 C83,28 85,30 88,30 C85,30 83,32 83,35 Z" />
+    <path
+        android:fillColor="#FFCA28"
+        android:pathData="M86,70 C86,68.5 84.5,67 83,67 C84.5,67 86,65.5 86,64 C86,65.5 87.5,67 89,67 C87.5,67 86,68.5 86,70 Z" />
+
+    <!-- BLOCKS (5 Glossy 3D Puzzle Blocks) -->
+
+    <!-- 1. Top-Left Yellow Block (x: 33..48, y: 40..55) -->
+    <!-- Shadow/Border -->
+    <path
+        android:fillColor="#C67C00"
+        android:pathData="M35,40 H46 A3,3 0 0,1 49,43 V53 A3,3 0 0,1 46,56 H35 A3,3 0 0,1 32,53 V43 A3,3 0 0,1 35,40 Z" />
+    <!-- Face -->
+    <path
+        android:pathData="M35,41 H46 A2,2 0 0,1 48,43 V52 A2,2 0 0,1 46,54 H35 A2,2 0 0,1 33,52 V43 A2,2 0 0,1 35,41 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="33"
+                android:startY="41"
+                android:endX="48"
+                android:endY="54"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FFEE58" />
+                <item android:offset="1.0" android:color="#FFA000" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Highlight -->
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M35,42 H45 A1,1 0 0,1 46,43 V44 A1,1 0 0,1 45,45 H35 A1,1 0 0,1 34,44 V43 A1,1 0 0,1 35,42 Z" />
+
+    <!-- 2. Top-Middle Red Block (x: 50..65, y: 40..55) -->
+    <!-- Shadow/Border -->
+    <path
+        android:fillColor="#B71C1C"
+        android:pathData="M52,40 H63 A3,3 0 0,1 66,43 V53 A3,3 0 0,1 63,56 H52 A3,3 0 0,1 49,53 V43 A3,3 0 0,1 52,40 Z" />
+    <!-- Face -->
+    <path
+        android:pathData="M52,41 H63 A2,2 0 0,1 65,43 V52 A2,2 0 0,1 63,54 H52 A2,2 0 0,1 50,52 V43 A2,2 0 0,1 52,41 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="50"
+                android:startY="41"
+                android:endX="65"
+                android:endY="54"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF8A80" />
+                <item android:offset="1.0" android:color="#D32F2F" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Highlight -->
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M52,42 H62 A1,1 0 0,1 63,43 V44 A1,1 0 0,1 62,45 H52 A1,1 0 0,1 51,44 V43 A1,1 0 0,1 52,42 Z" />
+
+    <!-- 3. Bottom-Left Cyan Block (x: 33..48, y: 57..72) -->
+    <path
+        android:fillColor="#006064"
+        android:pathData="M35,57 H46 A3,3 0 0,1 49,60 V70 A3,3 0 0,1 46,73 H35 A3,3 0 0,1 32,70 V60 A3,3 0 0,1 35,57 Z" />
+    <path
+        android:pathData="M35,58 H46 A2,2 0 0,1 48,60 V69 A2,2 0 0,1 46,71 H35 A2,2 0 0,1 33,69 V60 A2,2 0 0,1 35,58 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="33"
+                android:startY="58"
+                android:endX="48"
+                android:endY="71"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#80DEEA" />
+                <item android:offset="1.0" android:color="#0097A7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M35,59 H45 A1,1 0 0,1 46,60 V61 A1,1 0 0,1 45,62 H35 A1,1 0 0,1 34,61 V60 A1,1 0 0,1 35,59 Z" />
+
+    <!-- 4. Bottom-Middle Green Block (x: 50..65, y: 57..72) -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M52,57 H63 A3,3 0 0,1 66,60 V70 A3,3 0 0,1 63,73 H52 A3,3 0 0,1 49,70 V60 A3,3 0 0,1 52,57 Z" />
+    <path
+        android:pathData="M52,58 H63 A2,2 0 0,1 65,60 V69 A2,2 0 0,1 63,71 H52 A2,2 0 0,1 50,69 V60 A2,2 0 0,1 52,58 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="50"
+                android:startY="58"
+                android:endX="65"
+                android:endY="71"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#A5D6A7" />
+                <item android:offset="1.0" android:color="#2E7D32" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M52,59 H62 A1,1 0 0,1 63,60 V61 A1,1 0 0,1 62,62 H52 A1,1 0 0,1 51,61 V60 A1,1 0 0,1 52,59 Z" />
+
+    <!-- 5. Bottom-Right Purple Block (x: 67..82, y: 57..72) -->
+    <path
+        android:fillColor="#4A148C"
+        android:pathData="M69,57 H80 A3,3 0 0,1 83,60 V70 A3,3 0 0,1 80,73 H69 A3,3 0 0,1 66,70 V60 A3,3 0 0,1 69,57 Z" />
+    <path
+        android:pathData="M69,58 H80 A2,2 0 0,1 82,60 V69 A2,2 0 0,1 80,71 H69 A2,2 0 0,1 67,69 V60 A2,2 0 0,1 69,58 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="67"
+                android:startY="58"
+                android:endX="82"
+                android:endY="71"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#CE93D8" />
+                <item android:offset="1.0" android:color="#7B1FA2" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M69,59 H79 A1,1 0 0,1 80,60 V61 A1,1 0 0,1 79,62 H69 A1,1 0 0,1 68,61 V60 A1,1 0 0,1 69,59 Z" />
+
+    <!-- Badge Banner at Bottom (x: 24..84, y: 77..87) -->
+    <path
+        android:fillColor="#0288D1"
+        android:strokeColor="#29B6F6"
+        android:strokeWidth="1"
+        android:pathData="M29,77 H79 A5,5 0 0,1 84,82 A5,5 0 0,1 79,87 H29 A5,5 0 0,1 24,82 A5,5 0 0,1 29,77 Z" />
+    <!-- Badge Highlight Dot/Accents -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,82 A1.5,1.5 0 1,1 35,82 A1.5,1.5 0 1,1 32,82 M73,82 A1.5,1.5 0 1,1 76,82 A1.5,1.5 0 1,1 73,82" />
+    <!-- Mini Puzzle Symbol inside badge -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M48,80 H51 V83 H48 Z M53,80 H56 V83 H53 Z M50.5,83.5 H53.5 V86.5 H50.5 Z" />
+</vector>
+
