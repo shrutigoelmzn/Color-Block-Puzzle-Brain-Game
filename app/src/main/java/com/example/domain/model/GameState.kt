@@ -63,6 +63,8 @@ data class GameState(
     val dailyRewardCoins: Int = 0,
     val freeUndosRemaining: Int = 1,
     val hasUsedContinue: Boolean = false,
+    val revivesUsed: Int = 0,
+    val maxRevives: Int = 2,
     val activeHint: HintMove? = null,
     val lastUndoSnapshot: UndoSnapshot? = null,
     val timeRemainingSeconds: Int = 120, // for Timed Mode
@@ -71,4 +73,33 @@ data class GameState(
     val floatingScores: List<FloatingScoreEvent> = emptyList(),
     val recentlyPlacedCoords: Set<Pair<Int, Int>> = emptySet(),
     val clearingCoords: Set<Pair<Int, Int>> = emptySet()
-)
+) {
+    /**
+     * Target score used to evaluate level completion and the 80% threshold for the 2nd revive.
+     */
+    val targetScoreForRevive: Int
+        get() = when (mode) {
+            GameMode.TIMED -> currentTimedLevel?.targetScore ?: 1000
+            GameMode.CHALLENGE -> 1000
+            GameMode.CLASSIC -> if (bestScore > 0) bestScore else 1000
+        }
+
+    /**
+     * Whether the score is near the target (at least 80% scored).
+     */
+    val isNearTargetScore: Boolean
+        get() = score >= (targetScoreForRevive * 0.80f)
+
+    /**
+     * Can the player take a revive life by watching a rewarded ad?
+     * Rule: Max 2 revives per game.
+     * 1st revive: Can be taken any time.
+     * 2nd revive: ONLY available if player scored at least 80% of target score.
+     */
+    val canTakeReviveWithAd: Boolean
+        get() {
+            if (revivesUsed >= maxRevives) return false
+            if (revivesUsed == 0) return true
+            return isNearTargetScore
+        }
+}

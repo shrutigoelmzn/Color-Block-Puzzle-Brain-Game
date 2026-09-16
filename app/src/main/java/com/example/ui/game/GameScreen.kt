@@ -66,12 +66,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.ads.AdManager
 import com.example.domain.model.BlockShape
 import com.example.domain.model.GameMode
 import com.example.ui.components.BlockRenderUtils
@@ -87,6 +90,7 @@ fun GameScreen(
     onNavigateBack: () -> Unit
 ) {
     val gameState by viewModel.gameState.collectAsState()
+    val context = LocalContext.current
     val isDark = LocalThemeIsDark.current
     val rawTheme by viewModel.activeTheme.collectAsState()
     val theme = remember(rawTheme, isDark) { rawTheme.forMode(isDark) }
@@ -551,7 +555,17 @@ fun GameScreen(
                         viewModel.startNewGame(gameState.mode)
                     }
                 },
-                onContinue = { viewModel.useContinue() },
+                onReviveWithAd = {
+                    val activity = context as? Activity
+                    if (activity != null) {
+                        AdManager.showRewardedAd(
+                            activity = activity,
+                            onUserEarnedReward = { viewModel.reviveWithRewardedAd() }
+                        )
+                    } else {
+                        viewModel.reviveWithRewardedAd()
+                    }
+                },
                 onHome = { onNavigateBack() }
             )
         }
@@ -565,7 +579,16 @@ fun GameScreen(
                 linesCleared = gameState.linesClearedInGame,
                 highestCombo = gameState.highestComboInGame,
                 rewardCoins = gameState.completedLevelReward,
-                onNextLevel = { viewModel.startNextTimedLevel() },
+                onNextLevel = {
+                    val activity = context as? Activity
+                    if (activity != null) {
+                        AdManager.showInterstitialAd(activity) {
+                            viewModel.startNextTimedLevel()
+                        }
+                    } else {
+                        viewModel.startNextTimedLevel()
+                    }
+                },
                 onHome = { onNavigateBack() }
             )
         }

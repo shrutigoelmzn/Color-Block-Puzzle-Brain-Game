@@ -87,4 +87,29 @@ object MoveFinder {
 
         return LineClearEngine.clearLines(board, topRows, topCols)
     }
+
+    /**
+     * Clears exactly 2 lines (rows or columns) with the highest block occupancy,
+     * fulfilling the rewarded ad life condition.
+     */
+    fun clearTwoLines(board: Board): Board {
+        val rowCounts = IntArray(board.size) { r ->
+            (0 until board.size).count { c -> board.isOccupied(r, c) }
+        }
+        val colCounts = IntArray(board.size) { c ->
+            (0 until board.size).count { r -> board.isOccupied(r, c) }
+        }
+
+        val bestRows = rowCounts.indices.map { r -> Triple(true, r, rowCounts[r]) }
+        val bestCols = colCounts.indices.map { c -> Triple(false, c, colCounts[c]) }
+
+        val top2Lines = (bestRows + bestCols)
+            .sortedByDescending { it.third }
+            .take(2)
+
+        val rowsToClear = top2Lines.filter { it.first }.map { it.second }
+        val colsToClear = top2Lines.filter { !it.first }.map { it.second }
+
+        return LineClearEngine.clearLines(board, rowsToClear, colsToClear)
+    }
 }

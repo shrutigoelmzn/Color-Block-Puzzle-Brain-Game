@@ -45,6 +45,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize Google Play Games Services v2
+        com.example.data.PlayGamesManager.initialize(this)
+        com.example.data.PlayGamesManager.checkAuthentication(this)
+
+        // Initialize Google Mobile Ads SDK (AdMob)
+        com.example.ads.AdManager.initialize(this)
+
         setContent {
             val gameViewModel: GameViewModel = viewModel()
             val themeMode by gameViewModel.themeMode.collectAsState()
@@ -63,6 +71,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        com.example.data.PlayGamesManager.setActivity(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        com.example.data.PlayGamesManager.setActivity(null)
     }
 }
 

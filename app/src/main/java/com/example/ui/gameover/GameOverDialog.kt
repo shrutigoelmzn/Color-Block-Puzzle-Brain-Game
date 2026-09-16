@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -45,7 +48,7 @@ fun GameOverDialog(
     gameState: GameState,
     theme: GameTheme,
     onRestart: () -> Unit,
-    onContinue: () -> Unit,
+    onReviveWithAd: () -> Unit,
     onHome: () -> Unit
 ) {
     Dialog(
@@ -217,26 +220,120 @@ fun GameOverDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Second Chance / Continue Button (if available)
-                if (!gameState.hasUsedContinue) {
-                    Button(
-                        onClick = onContinue,
+                // Revive / Extra Life via Rewarded Ad Section
+                if (gameState.revivesUsed < gameState.maxRevives) {
+                    if (gameState.canTakeReviveWithAd) {
+                        Button(
+                            onClick = onReviveWithAd,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF10B981),
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color.White.copy(alpha = 0.25f),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "AD",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 10.sp,
+                                        color = Color.White
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Column(horizontalAlignment = Alignment.Start) {
+                                    Text(
+                                        text = if (gameState.revivesUsed == 0) "EXTRA LIFE (+ CLEAR 2 LINES)"
+                                        else "FINAL LIFE (+ CLEAR 2 LINES)",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                    Text(
+                                        text = if (gameState.revivesUsed == 0) "Watch ad to revive • Life 1 of 2"
+                                        else "Watch ad • Goal 80%+ scored! • Life 2 of 2",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        color = Color.White.copy(alpha = 0.9f)
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    } else {
+                        // 2nd Life is locked because player hasn't reached 80% of the target score
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            color = theme.cellEmptyBg,
+                            border = BorderStroke(1.dp, theme.cardBorder)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = theme.textColorSecondary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = "2nd Life Locked (80% Target Required)",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = theme.textColorPrimary
+                                    )
+                                    Text(
+                                        text = "Scored ${gameState.score} / ${gameState.targetScoreForRevive} pts. Reach ${(gameState.targetScoreForRevive * 0.80f).toInt()} pts (80%) for a second chance.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.sp,
+                                        color = theme.textColorSecondary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Both revives used
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF10B981),
-                            contentColor = Color.White
-                        )
+                            .padding(bottom = 12.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = theme.cellEmptyBg.copy(alpha = 0.5f)
                     ) {
                         Text(
-                            text = "CONTINUE (FREE REVIVE)",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
+                            text = "Max lives used (2 of 2) for this match",
+                            modifier = Modifier.padding(8.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = theme.textColorSecondary,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 // Play Again Button

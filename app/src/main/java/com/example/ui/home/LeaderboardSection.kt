@@ -1,8 +1,10 @@
 package com.example.ui.home
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,22 +21,33 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
+import com.example.data.PlayGamesManager
 import com.example.domain.model.GameTheme
 import com.example.domain.model.LeaderboardEntry
 import java.text.SimpleDateFormat
@@ -47,6 +60,90 @@ fun LeaderboardSection(
     theme: GameTheme,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    val isPlayGamesSignedIn by PlayGamesManager.isSignedIn.collectAsState()
+    val gamerTag by PlayGamesManager.currentGamerTag.collectAsState()
+    var showConfigDialog by remember { mutableStateOf(false) }
+
+    val isGmsAvailable = remember(activity) {
+        activity?.let { PlayGamesManager.isGooglePlayServicesAvailable(it) } ?: false
+    }
+
+    if (showConfigDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfigDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.SportsEsports,
+                        contentDescription = null,
+                        tint = Color(0xFF0F9D58),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Google Play Games",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (isPlayGamesSignedIn && !gamerTag.isNullOrBlank()) {
+                        Text(
+                            text = "Connected Gamer: $gamerTag",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF0F9D58)
+                        )
+                    } else if (isGmsAvailable) {
+                        Text(
+                            text = "Play Games Services: Ready",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF0F9D58)
+                        )
+                    } else {
+                        Text(
+                            text = "Play Games Services: Configured",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF0F9D58)
+                        )
+                    }
+
+                    Text(
+                        text = "Your Project ID and Leaderboard IDs are configured in the app.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = theme.textColorSecondary
+                    )
+
+                    if (!isGmsAvailable) {
+                        Text(
+                            text = "Note: Google Play Services requires a real Android device with Google Play Store installed and test accounts added in your Google Play Console. On this browser preview emulator, scores are tracked safely via local offline storage.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = theme.textColorSecondary
+                        )
+                    }
+
+                    Text(
+                        text = "All game records and personal bests are always preserved on your device.",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = theme.textColorPrimary
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showConfigDialog = false }) {
+                    Text("Got It", fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -65,7 +162,10 @@ fun LeaderboardSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -94,10 +194,65 @@ fun LeaderboardSection(
                             letterSpacing = 0.5.sp
                         )
                         Text(
-                            text = "Persisted across gaming sessions",
+                            text = if (isPlayGamesSignedIn && gamerTag != null) "Cloud Sync: $gamerTag"
+                            else "Offline & Google Play Sync",
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 11.sp,
-                            color = theme.textColorSecondary
+                            color = if (isPlayGamesSignedIn) Color(0xFF10B981) else theme.textColorSecondary
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF0F9D58).copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, Color(0xFF0F9D58).copy(alpha = 0.5f)),
+                    modifier = Modifier.clickable {
+                        if (activity != null) {
+                            if (!isGmsAvailable) {
+                                showConfigDialog = true
+                            } else if (!isPlayGamesSignedIn) {
+                                PlayGamesManager.signInExplicitly(activity) { success ->
+                                    if (success) {
+                                        val classicId = context.getString(R.string.leaderboard_classic_id)
+                                        PlayGamesManager.showLeaderboard(
+                                            activity = activity,
+                                            leaderboardId = classicId,
+                                            onNotConfigured = { showConfigDialog = true }
+                                        )
+                                    } else {
+                                        showConfigDialog = true
+                                    }
+                                }
+                            } else {
+                                val classicId = context.getString(R.string.leaderboard_classic_id)
+                                PlayGamesManager.showLeaderboard(
+                                    activity = activity,
+                                    leaderboardId = classicId,
+                                    onNotConfigured = { showConfigDialog = true }
+                                )
+                            }
+                        } else {
+                            showConfigDialog = true
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SportsEsports,
+                            contentDescription = "Play Games",
+                            tint = Color(0xFF0F9D58),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Play Games",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F9D58)
                         )
                     }
                 }

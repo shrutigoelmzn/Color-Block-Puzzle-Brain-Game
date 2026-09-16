@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Color Block Puzzle</string>
+    <!-- Google Play Games Services Configuration (Set your 11-12 digit App ID from Play Console) -->
+    <string name="game_services_project_id">243272957084</string>
+    <!-- Google Play Games Leaderboard IDs from Google Play Console -->
+    <string name="leaderboard_classic_id">CgkInPnKoYoHEAIQAA</string>
+    <string name="leaderboard_timed_id">CgkInPnKoYoHEAIQAQ</string>
+
+    <!-- Google Mobile Ads (AdMob) App ID: Debug uses Google test ID; replace with release App ID for production -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>

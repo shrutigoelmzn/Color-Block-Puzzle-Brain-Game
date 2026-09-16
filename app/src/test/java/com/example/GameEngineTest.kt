@@ -116,8 +116,8 @@ class GameEngineTest {
         // Line clears
         assertEquals(100, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 1))
         assertEquals(300, ScoreCalculator.calculateLineClearScore(linesCount = 2, combo = 1))
-        // Combo 3 with 1 line: 100 + (3-1)*60 = 220
-        assertEquals(220, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 3))
+        // Combo 3 with 1 line: 100 * 2.0x multiplier = 200
+        assertEquals(200, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 3))
 
         // Combo increment and reset
         assertEquals(1, ComboManager.updateCombo(currentCombo = 0, linesCleared = 1))
@@ -169,5 +169,42 @@ class GameEngineTest {
         assertEquals(daily1.title, daily2.title)
         assertEquals(daily1.targetScore, daily2.targetScore)
         assertEquals(daily1.targetLines, daily2.targetLines)
+    }
+
+    @Test
+    fun rewardedAdReviveRulesAndClearTwoLines() {
+        val timedLevel = com.example.domain.engine.TimedLevelGenerator.getLevel(1) // target: 350
+        val stateInitial = com.example.domain.model.GameState(
+            mode = com.example.domain.model.GameMode.TIMED,
+            currentTimedLevel = timedLevel,
+            score = 100, // < 80% of 350 (280)
+            revivesUsed = 0
+        )
+        // 1st revive can be taken at any time
+        assertTrue(stateInitial.canTakeReviveWithAd)
+
+        // After 1st revive used, with score 100 (below 80% of 350 = 280), 2nd revive is locked
+        val stateAfterFirstReviveLowScore = stateInitial.copy(revivesUsed = 1, score = 200)
+        assertFalse(stateAfterFirstReviveLowScore.isNearTargetScore)
+        assertFalse(stateAfterFirstReviveLowScore.canTakeReviveWithAd)
+
+        // When score reaches 80%+ (e.g. 290 >= 280), 2nd revive unlocks
+        val stateAfterFirstReviveHighScore = stateInitial.copy(revivesUsed = 1, score = 290)
+        assertTrue(stateAfterFirstReviveHighScore.isNearTargetScore)
+        assertTrue(stateAfterFirstReviveHighScore.canTakeReviveWithAd)
+
+        // Max 2 revives: after 2 revives used, no more revives allowed
+        val stateMaxRevives = stateInitial.copy(revivesUsed = 2, score = 300)
+        assertFalse(stateMaxRevives.canTakeReviveWithAd)
+
+        // Test clearTwoLines clears occupied lines
+        var board = Board.empty()
+        for (c in 0 until 8) {
+            board = board.withCell(0, c, Cell(1))
+            board = board.withCell(1, c, Cell(2))
+        }
+        assertEquals(16, board.countOccupied())
+        val cleared = MoveFinder.clearTwoLines(board)
+        assertEquals(0, cleared.countOccupied())
     }
 }

@@ -131,6 +131,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 dailyRewardCoins = 0,
                 freeUndosRemaining = 1,
                 hasUsedContinue = false,
+                revivesUsed = 0,
                 timeRemainingSeconds = timedLevelData?.timeLimitSeconds ?: 0,
                 lastUndoSnapshot = null,
                 activeHint = null
@@ -542,12 +543,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun useContinue() {
-        val state = _gameState.value
-        if (state.hasUsedContinue) return
+        reviveWithRewardedAd()
+    }
 
-        // Clear congested areas to provide room
-        val clearedBoard = MoveFinder.createSecondChanceBoard(state.board)
+    /**
+     * Revives the player by watching a rewarded ad.
+     * Clears 2 lines on the board to provide room, restores the tray,
+     * and increments revivesUsed.
+     */
+    fun reviveWithRewardedAd() {
+        val state = _gameState.value
+        if (!state.canTakeReviveWithAd) return
+
+        // Clear 2 lines as specified: "ask him to view the reward ads and clear two line"
+        val clearedBoard = MoveFinder.clearTwoLines(state.board)
         val newTray = blockGenerator.generateTray(clearedBoard, state.score)
+        val nextRevivesUsed = state.revivesUsed + 1
 
         _gameState.update {
             it.copy(
@@ -555,8 +566,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 availableShapes = newTray,
                 isGameOver = false,
                 isPaused = false,
-                hasUsedContinue = true,
-                timeRemainingSeconds = if (it.mode == GameMode.TIMED) 45 else 0
+                revivesUsed = nextRevivesUsed,
+                hasUsedContinue = nextRevivesUsed >= state.maxRevives,
+                timeRemainingSeconds = if (it.mode == GameMode.TIMED) maxOf(45, it.timeRemainingSeconds + 35) else 0
             )
         }
 
@@ -564,6 +576,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             startTimedModeCountdown()
         }
         soundManager.playReward()
+        hapticManager.vibrateCombo(2)
     }
 
     private fun endGame() {
@@ -583,6 +596,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 blocksPlaced = state.blocksPlacedInGame,
                 mode = state.mode
             )
+
+            // Submit high score to Google Play Games Services
+            try {
+                val app = getApplication<Application>()
+                val leaderboardId = if (state.mode == GameMode.TIMED) {
+                    app.getString(com.example.R.string.leaderboard_timed_id)
+                } else {
+                    app.getString(com.example.R.string.leaderboard_classic_id)
+                }
+                com.example.data.PlayGamesManager.submitScore(leaderboardId, state.score.toLong())
+            } catch (e: Exception) {
+                android.util.Log.w("GameViewModel", "Play Games submit error: ${e.message}")
+            }
         }
     }
 
