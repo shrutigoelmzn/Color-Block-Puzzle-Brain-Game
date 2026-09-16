@@ -36,6 +36,46 @@ object MoveFinder {
     }
 
     /**
+     * Counts the number of valid locations on the board where this shape can fit.
+     */
+    fun countValidPlacements(board: Board, shape: BlockShape): Int {
+        val maxR = board.size - shape.height
+        val maxC = board.size - shape.width
+        if (maxR < 0 || maxC < 0) return 0
+
+        var count = 0
+        for (r in 0..maxR) {
+            for (c in 0..maxC) {
+                if (PlacementEngine.canPlace(board, shape, r, c)) {
+                    count++
+                }
+            }
+        }
+        return count
+    }
+
+    /**
+     * Checks if placing this shape anywhere on the current board can immediately trigger a line clear.
+     */
+    fun canClearAnyLine(board: Board, shape: BlockShape): Boolean {
+        val maxR = board.size - shape.height
+        val maxC = board.size - shape.width
+        if (maxR < 0 || maxC < 0) return false
+
+        for (r in 0..maxR) {
+            for (c in 0..maxC) {
+                if (PlacementEngine.canPlace(board, shape, r, c)) {
+                    val testBoard = PlacementEngine.place(board, shape, r, c)
+                    if (LineClearEngine.findCompletedLines(testBoard).hasClears) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    /**
      * Finds a legal placement hint for the available shapes.
      * Prioritizes moves that clear lines, otherwise returns the first valid position found.
      */

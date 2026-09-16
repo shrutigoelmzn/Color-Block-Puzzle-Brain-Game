@@ -207,4 +207,60 @@ class GameEngineTest {
         val cleared = MoveFinder.clearTwoLines(board)
         assertEquals(0, cleared.countOccupied())
     }
+
+    @Test
+    fun allTrayBlocksFitGridAndAtLeastTwoArePerfectFits() {
+        val generator = BlockGenerator()
+
+        // 1. Test on empty board
+        val emptyBoard = Board.empty()
+        val trayEmpty = generator.generateTray(emptyBoard, 0)
+        assertEquals(3, trayEmpty.size)
+
+        // All three blocks must fit in the grid
+        for (shape in trayEmpty) {
+            assertTrue(
+                "Shape ${shape.id} should fit in grid",
+                MoveFinder.canPlaceShapeAnywhere(emptyBoard, shape)
+            )
+        }
+
+        // At least two must be perfect fits
+        val perfectFitsOnEmpty = trayEmpty.count { shape ->
+            MoveFinder.canClearAnyLine(emptyBoard, shape) ||
+                MoveFinder.countValidPlacements(emptyBoard, shape) >= 3 ||
+                shape.blockCount <= 3
+        }
+        assertTrue("At least two shapes should be perfect fits, got $perfectFitsOnEmpty", perfectFitsOnEmpty >= 2)
+
+        // 2. Test on a crowded board (e.g. 50+ occupied cells)
+        var crowdedBoard = Board.empty()
+        // Fill several rows leaving specific cavities
+        for (r in 0 until 6) {
+            for (c in 0 until 7) {
+                crowdedBoard = crowdedBoard.withCell(r, c, Cell(1))
+            }
+        }
+        val trayCrowded = generator.generateTray(crowdedBoard, 2500)
+        assertEquals(3, trayCrowded.size)
+
+        // Check that ALL three blocks fit in the crowded grid
+        for (shape in trayCrowded) {
+            assertTrue(
+                "Shape ${shape.id} must legally fit on crowded board",
+                MoveFinder.canPlaceShapeAnywhere(crowdedBoard, shape)
+            )
+        }
+
+        // And at least two are perfect fits
+        val perfectFitsOnCrowded = trayCrowded.count { shape ->
+            MoveFinder.canClearAnyLine(crowdedBoard, shape) ||
+                MoveFinder.countValidPlacements(crowdedBoard, shape) >= 3 ||
+                shape.blockCount <= 3
+        }
+        assertTrue(
+            "At least two shapes must be perfect fits on crowded board, got $perfectFitsOnCrowded",
+            perfectFitsOnCrowded >= 2
+        )
+    }
 }

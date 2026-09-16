@@ -2,6 +2,7 @@ package com.example.ui.game
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -92,12 +94,22 @@ private fun ShapeSlot(
     val currentOnDragCancel by rememberUpdatedState(onDragCancel)
 
     val canFit = shape != null && MoveFinder.canPlaceShapeAnywhere(board, shape)
+    val isPerfectFit = shape != null && (MoveFinder.canClearAnyLine(board, shape) || MoveFinder.countValidPlacements(board, shape) >= 3)
 
     Box(
         modifier = Modifier
             .size(100.dp, 100.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(theme.boardBg.copy(alpha = if (isHighlighted) 0.9f else 0.5f))
+            .background(theme.boardBg.copy(alpha = if (isHighlighted) 0.95f else 0.5f))
+            .border(
+                width = if (isHighlighted) 2.dp else if (isPerfectFit && !isDraggingThis) 1.5.dp else 1.dp,
+                color = when {
+                    isHighlighted -> theme.accentColor
+                    isPerfectFit && !isDraggingThis -> Color(0xFF10B981).copy(alpha = 0.5f)
+                    else -> theme.cardBorder.copy(alpha = 0.3f)
+                },
+                shape = RoundedCornerShape(16.dp)
+            )
             .onGloballyPositioned { slotCoordinates = it },
         contentAlignment = Alignment.Center
     ) {

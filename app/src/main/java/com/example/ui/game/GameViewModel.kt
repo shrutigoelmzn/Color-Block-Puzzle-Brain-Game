@@ -340,7 +340,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val finalTray = if (isTrayEmpty) {
             blockGenerator.generateTray(finalBoard, newScore)
         } else {
-            updatedShapes
+            // Ensure only valid blocks show in options:
+            // If any remaining shape can no longer fit on the updated board, replace it with a shape that fits!
+            updatedShapes.map { shape ->
+                if (shape != null && !MoveFinder.canPlaceShapeAnywhere(finalBoard, shape)) {
+                    blockGenerator.findFittingShape(finalBoard)
+                } else {
+                    shape
+                }
+            }
         }
 
         // Check game-over condition

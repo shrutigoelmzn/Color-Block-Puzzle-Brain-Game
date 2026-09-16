@@ -54,70 +54,119 @@ class BlockGenerator(private val random: Random = Random.Default) {
 
     /**
      * Generates a 3-piece shape tray tailored to current board state and score.
-     * Ensures at least one piece in the set can be legally placed on the board!
+     *
+     * Strict rules:
+     * 1. Check all 3 suggestion blocks whether they fit in the grid.
+     * 2. ONLY valid blocks that can fit on the current board are shown as options.
+     * 3. AT LEAST TWO blocks are guaranteed to be a "perfect fit" (plentiful placement
+     *    options, line-clearing capabilities, or compact/easy fit).
      */
     fun generateTray(board: Board, score: Int): List<BlockShape> {
         val occupiedCells = board.countOccupied()
         val totalCells = board.size * board.size
         val occupancyRatio = occupiedCells.toFloat() / totalCells
 
+        // 1. Select base pool according to game progress and board congestion
         val pool = selectPool(score, occupancyRatio)
 
-        var candidateSet: List<BlockShape>
-        var attempts = 0
-        do {
-            // Pick 3 shapes from pool with color variety
-            val shape1 = pickRandomWithRandomColor(pool)
-            val shape2 = pickRandomWithRandomColor(pool)
-            val shape3 = pickRandomWithRandomColor(pool)
-            candidateSet = listOf(shape1, shape2, shape3)
-            attempts++
+        // 2. Check all candidate blocks against the grid: ONLY valid blocks that can fit are kept
+        val validInPool = pool.filter { MoveFinder.canPlaceShapeAnywhere(board, it) }
+        val allValidShapes = if (validInPool.isNotEmpty()) {
+            validInPool
+        } else {
+            val fallback = BlockShape.ALL_SHAPES.filter { MoveFinder.canPlaceShapeAnywhere(board, it) }
+            if (fallback.isNotEmpty()) fallback else simpleShapes
+        }
 
-            // If board is very crowded or attempts > 5, ensure at least one piece has a legal move
-            if (MoveFinder.hasAnyLegalMove(board, candidateSet)) {
-                return candidateSet
-            }
-        } while (attempts < 15)
+        // If no shape can fit at all (board 100% full), fallback to smallest shapes
+        if (allValidShapes.isEmpty()) {
+            return listOf(
+                BlockShape.dot(random.nextInt(7)),
+                BlockShape.dot(random.nextInt(7)),
+                BlockShape.dot(random.nextInt(7))
+            )
+        }
 
-        // Fallback: If no legal moves in random draws, inject at least one small recovery piece that fits
-        val recoveryShape = findFittingShape(board) ?: BlockShape.dot(random.nextInt(7))
-        return listOf(
-            recoveryShape,
-            pickRandomWithRandomColor(pool),
-            pickRandomWithRandomColor(pool)
-        )
+        // 3. Identify "perfect fit" blocks:
+        // - Shapes that can clear at least one line immediately on the board
+        // - OR shapes with high placement freedom (>= 3 valid positions)
+        // - OR small/compact shapes (<= 3 cells) that fit easily
+        val lineClearingShapes = allValidShapes.filter { MoveFinder.canClearAnyLine(board, it) }
+        val highPlacementShapes = allValidShapes.filter { MoveFinder.countValidPlacements(board, it) >= 3 }
+        val compactShapes = allValidShapes.filter { it.blockCount <= 3 }
+
+        val perfectFitPool = (lineClearingShapes + highPlacementShapes + compactShapes)
+            .distinctBy { it.id }
+            .ifEmpty { allValidShapes }
+
+        // 4. Select at least two "perfect fit" blocks, and ensure the 3rd block is also valid
+        val chosen = mutableListOf<BlockShape>()
+        val usedIds = mutableSetOf<String>()
+
+        // 1st block: Guaranteed Perfect Fit
+        val p1 = pickUniqueWithRandomColor(perfectFitPool, usedIds)
+        chosen.add(p1)
+        usedIds.add(p1.id)
+
+        // 2nd block: Guaranteed Perfect Fit (At least two perfect fits!)
+        val p2 = pickUniqueWithRandomColor(perfectFitPool, usedIds)
+        chosen.add(p2)
+        usedIds.add(p2.id)
+
+        // 3rd block: Valid block that fits the grid
+        val p3 = pickUniqueWithRandomColor(allValidShapes, usedIds)
+        chosen.add(p3)
+
+        return chosen
+    }
+
+    /**
+     * Finds a single valid shape that is guaranteed to fit on the current board.
+     * Prefers a "perfect fit" (line clearing or high placement freedom).
+     */
+    fun findFittingShape(board: Board): BlockShape {
+        val allValid = BlockShape.ALL_SHAPES.filter { MoveFinder.canPlaceShapeAnywhere(board, it) }
+        if (allValid.isEmpty()) {
+            return BlockShape.dot(random.nextInt(7))
+        }
+
+        val perfect = allValid.filter {
+            MoveFinder.canClearAnyLine(board, it) || MoveFinder.countValidPlacements(board, it) >= 3
+        }
+
+        val pool = if (perfect.isNotEmpty()) perfect else allValid
+        val template = pool[random.nextInt(pool.size)]
+        return template.copy(colorId = random.nextInt(7))
+    }
+
+    private fun pickUniqueWithRandomColor(
+        pool: List<BlockShape>,
+        alreadyUsedIds: Set<String>
+    ): BlockShape {
+        val unused = pool.filterNot { alreadyUsedIds.contains(it.id) }
+        val template = if (unused.isNotEmpty()) {
+            unused[random.nextInt(unused.size)]
+        } else {
+            pool[random.nextInt(pool.size)]
+        }
+        val colorId = random.nextInt(7)
+        return template.copy(colorId = colorId)
     }
 
     private fun selectPool(score: Int, occupancyRatio: Float): List<BlockShape> {
         // High occupancy -> give more simple/medium shapes to allow clearing
-        if (occupancyRatio > 0.65f) {
-            return simpleShapes + mediumShapes
+        if (occupancyRatio > 0.60f) {
+            return simpleShapes + simpleShapes + mediumShapes
         }
 
         return when {
             // Early game
             score < 1000 -> simpleShapes + simpleShapes + mediumShapes
             // Mid game
-            score < 4000 -> simpleShapes + mediumShapes + mediumShapes + hardShapes.take(4)
+            score < 4000 -> simpleShapes + mediumShapes + mediumShapes + hardShapes.take(3)
             // Late game
-            else -> mediumShapes + hardShapes + simpleShapes.take(3)
+            else -> simpleShapes + mediumShapes + hardShapes
         }
-    }
-
-    private fun pickRandomWithRandomColor(pool: List<BlockShape>): BlockShape {
-        val template = pool[random.nextInt(pool.size)]
-        val colorId = random.nextInt(7)
-        return template.copy(colorId = colorId)
-    }
-
-    private fun findFittingShape(board: Board): BlockShape? {
-        val candidates = simpleShapes.shuffled(random)
-        for (shape in candidates) {
-            if (MoveFinder.canPlaceShapeAnywhere(board, shape)) {
-                return shape.copy(colorId = random.nextInt(7))
-            }
-        }
-        return null
     }
 
     companion object {
