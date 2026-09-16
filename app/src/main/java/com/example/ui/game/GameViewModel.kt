@@ -239,8 +239,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Place the shape
         val placedCoords = PlacementEngine.getCandidateCoordinates(shape, boardRow, boardCol).toSet()
         val placedBoard = PlacementEngine.place(state.board, shape, boardRow, boardCol)
-        soundManager.playPlace()
-        hapticManager.vibratePlace()
+        soundManager.playPlace(shape.blockCount)
+        hapticManager.vibratePlace(shape.blockCount)
 
         val placementScore = ScoreCalculator.calculatePlacementScore(shape)
         var newScore = state.score + placementScore
@@ -474,6 +474,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     isLevelCompleted = false,
                     isGameOver = false,
                     isPaused = false,
+                    revivesUsed = 0,
+                    freeUndosRemaining = maxOf(1, it.freeUndosRemaining),
                     timeRemainingSeconds = nextLevel.timeLimitSeconds,
                     lastUndoSnapshot = null,
                     activeHint = null
@@ -502,6 +504,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     isLevelCompleted = false,
                     isGameOver = false,
                     isPaused = false,
+                    revivesUsed = 0,
+                    freeUndosRemaining = maxOf(1, it.freeUndosRemaining),
                     timeRemainingSeconds = currentLevel.timeLimitSeconds,
                     lastUndoSnapshot = null,
                     activeHint = null
@@ -548,6 +552,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
         soundManager.playClick()
+    }
+
+    /**
+     * Grants extra undos when the user watches a rewarded ad (+2 undos per rewarded ad).
+     */
+    fun grantRewardedUndos(count: Int = 2) {
+        soundManager.playReward()
+        hapticManager.vibrateHighScore()
+        _gameState.update {
+            it.copy(freeUndosRemaining = it.freeUndosRemaining + count)
+        }
     }
 
     fun useContinue() {

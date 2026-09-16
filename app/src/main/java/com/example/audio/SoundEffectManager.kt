@@ -29,10 +29,10 @@ class SoundEffectManager(
         }
     }
 
-    fun playPlace() {
+    fun playPlace(blockCount: Int = 4) {
         if (!isSoundEnabled) return
         scope.launch {
-            playChirp(startFreq = 380f, endFreq = 200f, durationMs = 60, maxVol = 0.5f)
+            playBlockPlacementAudio(blockCount)
         }
     }
 
@@ -177,6 +177,83 @@ class SoundEffectManager(
             track.release()
         } catch (_: Exception) {
             // Fallback
+        }
+    }
+
+    private fun playBlockPlacementAudio(blockCount: Int) {
+        try {
+            val durationMs = 75
+            val numSamples = (durationMs * sampleRate) / 1000
+            val buffer = ShortArray(numSamples)
+
+            // Dynamic base frequency: larger shapes sound slightly deeper and weightier
+            val baseFreq = when {
+                blockCount <= 2 -> 300f
+                blockCount in 3..4 -> 260f
+                else -> 220f
+            }
+
+            for (i in 0 until numSamples) {
+                val progress = i.toDouble() / numSamples
+                // Pitch glides down swiftly on contact, giving weight and physical impact
+                val pitchMultiplier = 1.35 - (0.50 * kotlin.math.sqrt(progress))
+                val currentFreq = baseFreq * pitchMultiplier
+                val t = i.toDouble() / sampleRate
+
+                val fundamentalAngle = 2.0 * PI * currentFreq * t
+                val secondHarmonicAngle = 2.0 * PI * (currentFreq * 2.02) * t
+                val thirdHarmonicAngle = 2.0 * PI * (currentFreq * 3.01) * t
+
+                // Fast attack in first 3ms, then exponential resonance decay
+                val attackSamples = (sampleRate * 0.003).toInt().coerceAtLeast(1)
+                val envelope = if (i < attackSamples) {
+                    i.toDouble() / attackSamples
+                } else {
+                    val decayT = (i - attackSamples).toDouble() / (numSamples - attackSamples)
+                    kotlin.math.max(0.0, 1.0 - decayT).let { it * it * it }
+                }
+
+                // Initial 6ms transient click for tactile physical snap
+                val clickTransient = if (i < (sampleRate * 0.006).toInt()) {
+                    0.25 * sin(2.0 * PI * 1800.0 * t)
+                } else {
+                    0.0
+                }
+
+                val rawWave = (sin(fundamentalAngle) * 0.70 +
+                        sin(secondHarmonicAngle) * 0.22 +
+                        sin(thirdHarmonicAngle) * 0.08 +
+                        clickTransient)
+
+                val sample = (rawWave * envelope * 0.65 * Short.MAX_VALUE).toInt()
+                buffer[i] = sample.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+            }
+
+            val track = AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_GAME)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(sampleRate)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build()
+                )
+                .setBufferSizeInBytes(buffer.size * 2)
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .build()
+
+            track.write(buffer, 0, buffer.size)
+            track.play()
+            Thread.sleep(durationMs.toLong() + 15)
+            track.stop()
+            track.release()
+        } catch (_: Exception) {
+            // Audio output fallback
         }
     }
 }

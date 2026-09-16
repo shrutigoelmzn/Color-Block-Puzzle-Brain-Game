@@ -269,38 +269,34 @@ fun GameOverDialog(
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            shape = RoundedCornerShape(14.dp),
+                                .height(52.dp),
+                            shape = RoundedCornerShape(16.dp),
                             color = theme.cellEmptyBg,
                             border = BorderStroke(1.dp, theme.cardBorder)
                         ) {
                             Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Lock,
                                     contentDescription = null,
                                     tint = theme.textColorSecondary,
-                                    modifier = Modifier.size(22.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(
-                                        text = "2nd Life Locked (80% Target Required)",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = theme.textColorPrimary
-                                    )
-                                    Text(
-                                        text = "Scored ${gameState.score} / ${gameState.targetScoreForRevive} pts. Reach ${(gameState.targetScoreForRevive * 0.80f).toInt()} pts (80%) for a second chance.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontSize = 11.sp,
-                                        color = theme.textColorSecondary
-                                    )
-                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "2nd Life Locked",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = theme.textColorSecondary
+                                )
                             }
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 } else {
                     // Both revives used
@@ -312,7 +308,7 @@ fun GameOverDialog(
                         color = theme.cellEmptyBg.copy(alpha = 0.5f)
                     ) {
                         Text(
-                            text = "Max lives used (2 of 2) for this match",
+                            text = "Max lives used (2 of 2) for this level",
                             modifier = Modifier.padding(8.dp),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 11.sp,

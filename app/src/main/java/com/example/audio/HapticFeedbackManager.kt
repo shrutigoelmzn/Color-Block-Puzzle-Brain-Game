@@ -28,13 +28,23 @@ class HapticFeedbackManager(
         }
     }
 
-    fun vibratePlace() {
+    fun vibratePlace(blockCount: Int = 4) {
         if (!isHapticsEnabled || vibrator?.hasVibrator() != true) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val timings = longArrayOf(0, 14, 8, 24)
+            val amplitudes = intArrayOf(0, 180, 0, 255)
+            try {
+                vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+            } catch (_: Exception) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+                } else {
+                    vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+                }
+            }
         } else {
             @Suppress("DEPRECATION")
-            vibrator.vibrate(25)
+            vibrator.vibrate(35)
         }
     }
 

@@ -30,13 +30,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -46,8 +49,10 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -102,6 +107,7 @@ fun GameScreen(
     var draggingShapeIndex by remember { mutableStateOf<Int?>(null) }
     var draggingShape by remember { mutableStateOf<BlockShape?>(null) }
     var dragTouchPositionInRoot by remember { mutableStateOf<Offset?>(null) }
+    var showRewardedUndoDialog by remember { mutableStateOf(false) }
     val density = LocalDensity.current
 
     // Infinite transition for pulsing combo banner
@@ -434,28 +440,50 @@ fun GameScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Undo Button
+                    // Undo Button (1 Free Undo by default; watch rewarded ad for +2 Undos)
                     BadgedBox(
                         badge = {
                             if (gameState.freeUndosRemaining > 0) {
                                 Badge(containerColor = Color(0xFF00E676)) {
-                                    Text("${gameState.freeUndosRemaining}")
+                                    Text(
+                                        text = "${gameState.freeUndosRemaining}",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else {
+                                Badge(containerColor = Color(0xFFFF9800)) {
+                                    Text(
+                                        text = "+2 AD",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 9.sp
+                                    )
                                 }
                             }
                         }
                     ) {
                         FilledTonalButton(
-                            onClick = { viewModel.undo() },
-                            enabled = !gameState.isPaused && !gameState.isGameOver && gameState.freeUndosRemaining > 0 && gameState.lastUndoSnapshot != null,
+                            onClick = {
+                                if (gameState.freeUndosRemaining > 0) {
+                                    viewModel.undo()
+                                } else {
+                                    showRewardedUndoDialog = true
+                                }
+                            },
+                            enabled = !gameState.isPaused && !gameState.isGameOver &&
+                                    (gameState.freeUndosRemaining == 0 || gameState.lastUndoSnapshot != null),
                             shape = RoundedCornerShape(14.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Undo,
+                                imageVector = Icons.AutoMirrored.Filled.Undo,
                                 contentDescription = "Undo",
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Undo", fontSize = 13.sp)
+                            Text(
+                                text = if (gameState.freeUndosRemaining > 0) "Undo" else "+2 Undos",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
 
@@ -610,6 +638,130 @@ fun GameScreen(
                 onHome = {
                     viewModel.dismissDailyCelebration()
                     onNavigateBack()
+                }
+            )
+        }
+
+        // Rewarded Ad Extra Undos Dialog
+        if (showRewardedUndoDialog) {
+            AlertDialog(
+                onDismissRequest = { showRewardedUndoDialog = false },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF10B981).copy(alpha = 0.15f),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                                    contentDescription = null,
+                                    tint = Color(0xFF10B981),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Get 2 Extra Undos",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "You've used your free undo. Watch a short video ad to immediately receive 2 additional Undos.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = theme.textColorSecondary
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF10B981).copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.35f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFF10B981),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "REWARD",
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 9.sp,
+                                        color = Color.White
+                                    )
+                                }
+                                Text(
+                                    text = "+2 Extra Undos",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF10B981)
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val activity = context as? Activity
+                            if (activity != null) {
+                                AdManager.showRewardedAd(
+                                    activity = activity,
+                                    onUserEarnedReward = {
+                                        viewModel.grantRewardedUndos(2)
+                                        showRewardedUndoDialog = false
+                                    },
+                                    onAdDismissed = {
+                                        showRewardedUndoDialog = false
+                                    }
+                                )
+                            } else {
+                                viewModel.grantRewardedUndos(2)
+                                showRewardedUndoDialog = false
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color.White.copy(alpha = 0.25f),
+                            modifier = Modifier.padding(end = 6.dp)
+                        ) {
+                            Text(
+                                text = "AD",
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 9.sp,
+                                color = Color.White
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Watch Ad (+2 Undos)", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRewardedUndoDialog = false }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }
