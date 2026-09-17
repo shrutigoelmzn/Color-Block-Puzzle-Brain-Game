@@ -173,6 +173,7 @@ fun GameBoardCanvas(
                             topLeft = topLeft,
                             size = Size(cellSize, cellSize),
                             colors = blockColors,
+                            style = theme.blockStyle,
                             scale = scale,
                             alpha = alpha
                         )

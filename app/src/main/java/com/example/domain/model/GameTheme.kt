@@ -2,6 +2,16 @@ package com.example.domain.model
 
 import androidx.compose.ui.graphics.Color
 
+enum class BlockStyle(val id: String, val displayName: String) {
+    JEWEL("jewel", "Jewel"),
+    GLOSSY("glossy", "Glossy"),
+    WOODEN("wooden", "Wooden Box"),
+    FROSTED_GLASS("frosted_glass", "Frosted Glass"),
+    CYBER_NEON("cyber_neon", "Cyber Neon"),
+    STONE("stone", "Stone Block"),
+    GOLDEN("golden", "Golden Ingot")
+}
+
 enum class AppThemeMode(val id: String, val displayName: String) {
     SYSTEM("system", "System"),
     LIGHT("light", "Light"),
@@ -24,6 +34,7 @@ data class GameTheme(
     val name: String,
     val price: Int,
     val isDark: Boolean = true,
+    val blockStyle: BlockStyle = BlockStyle.GLOSSY,
     val bgGradientStart: Color,
     val bgGradientEnd: Color,
     val boardBg: Color,
@@ -50,6 +61,8 @@ data class GameTheme(
             "glass" -> if (isDarkMode) GLASS_DARK else GLASS_LIGHT
             "pastel" -> if (isDarkMode) PASTEL_DARK else PASTEL_LIGHT
             "dark_space" -> if (isDarkMode) DARK_SPACE_DARK else DARK_SPACE_LIGHT
+            "stone" -> if (isDarkMode) STONE_DARK else STONE_LIGHT
+            "golden" -> if (isDarkMode) GOLDEN_DARK else GOLDEN_LIGHT
             else -> if (isDarkMode) CLASSIC_DARK else CLASSIC_LIGHT
         }
     }
@@ -118,6 +131,7 @@ data class GameTheme(
             name = "Cyber Neon",
             price = 200,
             isDark = false,
+            blockStyle = BlockStyle.CYBER_NEON,
             bgGradientStart = Color(0xFFF5F3FF),
             bgGradientEnd = Color(0xFFEDE9FE),
             boardBg = Color(0xFFFFFFFF),
@@ -144,6 +158,7 @@ data class GameTheme(
             name = "Cyber Neon",
             price = 200,
             isDark = true,
+            blockStyle = BlockStyle.CYBER_NEON,
             bgGradientStart = Color(0xFF0B001A),
             bgGradientEnd = Color(0xFF190033),
             boardBg = Color(0xFF150826),
@@ -228,6 +243,7 @@ data class GameTheme(
             name = "Warm Timber",
             price = 400,
             isDark = false,
+            blockStyle = BlockStyle.WOODEN,
             bgGradientStart = Color(0xFFFDFBF7),
             bgGradientEnd = Color(0xFFF3EDE2),
             boardBg = Color(0xFFFFFFFF),
@@ -254,6 +270,7 @@ data class GameTheme(
             name = "Warm Timber",
             price = 400,
             isDark = true,
+            blockStyle = BlockStyle.WOODEN,
             bgGradientStart = Color(0xFF2C1810),
             bgGradientEnd = Color(0xFF180D08),
             boardBg = Color(0xFF3D2314),
@@ -283,6 +300,7 @@ data class GameTheme(
             name = "Frosted Glass",
             price = 500,
             isDark = false,
+            blockStyle = BlockStyle.FROSTED_GLASS,
             bgGradientStart = Color(0xFFF0F9FF),
             bgGradientEnd = Color(0xFFE0F2FE),
             boardBg = Color(0xFFFFFFFF),
@@ -309,6 +327,7 @@ data class GameTheme(
             name = "Frosted Glass",
             price = 500,
             isDark = true,
+            blockStyle = BlockStyle.FROSTED_GLASS,
             bgGradientStart = Color(0xFF102A43),
             bgGradientEnd = Color(0xFF0B1B2B),
             boardBg = Color(0xFF1A365D),
@@ -440,6 +459,120 @@ data class GameTheme(
             )
         )
 
+        // ----------------------------------------------------
+        // 8. RUGGED STONE
+        // ----------------------------------------------------
+        val STONE_LIGHT = GameTheme(
+            id = "stone",
+            name = "Ancient Stone",
+            price = 450,
+            isDark = false,
+            blockStyle = BlockStyle.STONE,
+            bgGradientStart = Color(0xFFF1F5F9),
+            bgGradientEnd = Color(0xFFE2E8F0),
+            boardBg = Color(0xFFFFFFFF),
+            gridBorder = Color(0xFF94A3B8),
+            cellEmptyBg = Color(0xFFF1F5F9),
+            cardBg = Color(0xFFFFFFFF),
+            cardBorder = Color(0xFF94A3B8),
+            textColorPrimary = Color(0xFF1E293B),
+            textColorSecondary = Color(0xFF475569),
+            accentColor = Color(0xFF64748B),
+            blockPalettes = listOf(
+                BlockThemeColors(Color(0xFF64748B), Color(0xFF94A3B8), Color(0xFF334155), Color(0x6664748B)),
+                BlockThemeColors(Color(0xFF78716C), Color(0xFFA8A29E), Color(0xFF44403C), Color(0x6678716C)),
+                BlockThemeColors(Color(0xFF475569), Color(0xFF64748B), Color(0xFF1E293B), Color(0x66475569)),
+                BlockThemeColors(Color(0xFF0D9488), Color(0xFF2DD4BF), Color(0xFF115E59), Color(0x660D9488)),
+                BlockThemeColors(Color(0xFFB45309), Color(0xFFF59E0B), Color(0xFF78350F), Color(0x66B45309)),
+                BlockThemeColors(Color(0xFF9333EA), Color(0xFFC084FC), Color(0xFF6B21A8), Color(0x669333EA)),
+                BlockThemeColors(Color(0xFFBE123C), Color(0xFFFB7185), Color(0xFF881337), Color(0x66BE123C))
+            )
+        )
+
+        val STONE_DARK = GameTheme(
+            id = "stone",
+            name = "Ancient Stone",
+            price = 450,
+            isDark = true,
+            blockStyle = BlockStyle.STONE,
+            bgGradientStart = Color(0xFF1E242B),
+            bgGradientEnd = Color(0xFF14181E),
+            boardBg = Color(0xFF262E38),
+            gridBorder = Color(0xFF434E5D),
+            cellEmptyBg = Color(0xFF181D24),
+            cardBg = Color(0xFF262E38),
+            cardBorder = Color(0xFF434E5D),
+            textColorPrimary = Color(0xFFE2E8F0),
+            textColorSecondary = Color(0xFF94A3B8),
+            accentColor = Color(0xFF94A3B8),
+            blockPalettes = listOf(
+                BlockThemeColors(Color(0xFF94A3B8), Color(0xFFCBD5E1), Color(0xFF475569), Color(0x6694A3B8)),
+                BlockThemeColors(Color(0xFFA8A29E), Color(0xFFD6D3D1), Color(0xFF57534E), Color(0x66A8A29E)),
+                BlockThemeColors(Color(0xFF64748B), Color(0xFF94A3B8), Color(0xFF334155), Color(0x6664748B)),
+                BlockThemeColors(Color(0xFF2DD4BF), Color(0xFF99F6E4), Color(0xFF0F766E), Color(0x662DD4BF)),
+                BlockThemeColors(Color(0xFFFBBF24), Color(0xFFFDE68A), Color(0xFFB45309), Color(0x66FBBF24)),
+                BlockThemeColors(Color(0xFFC084FC), Color(0xFFE9D5FF), Color(0xFF7E22CE), Color(0x66C084FC)),
+                BlockThemeColors(Color(0xFFFB7185), Color(0xFFFECDD3), Color(0xFFBE123C), Color(0x66FB7185))
+            )
+        )
+
+        // ----------------------------------------------------
+        // 9. GOLDEN INGOT
+        // ----------------------------------------------------
+        val GOLDEN_LIGHT = GameTheme(
+            id = "golden",
+            name = "Golden Ingot",
+            price = 700,
+            isDark = false,
+            blockStyle = BlockStyle.GOLDEN,
+            bgGradientStart = Color(0xFFFFFBEB),
+            bgGradientEnd = Color(0xFFFEF3C7),
+            boardBg = Color(0xFFFFFFFF),
+            gridBorder = Color(0xFFFDE68A),
+            cellEmptyBg = Color(0xFFFFFDF5),
+            cardBg = Color(0xFFFFFFFF),
+            cardBorder = Color(0xFFFDE68A),
+            textColorPrimary = Color(0xFF78350F),
+            textColorSecondary = Color(0xFFB45309),
+            accentColor = Color(0xFFD97706),
+            blockPalettes = listOf(
+                BlockThemeColors(Color(0xFFF59E0B), Color(0xFFFEF08A), Color(0xFFB45309), Color(0x80F59E0B)),
+                BlockThemeColors(Color(0xFFD97706), Color(0xFFFDE68A), Color(0xFF92400E), Color(0x80D97706)),
+                BlockThemeColors(Color(0xFFEAB308), Color(0xFFFEF9C3), Color(0xFFA16207), Color(0x80EAB308)),
+                BlockThemeColors(Color(0xFF10B981), Color(0xFFA7F3D0), Color(0xFF047857), Color(0x8010B981)),
+                BlockThemeColors(Color(0xFF06B6D4), Color(0xFFA5F3FC), Color(0xFF0E7490), Color(0x8006B6D4)),
+                BlockThemeColors(Color(0xFFEF4444), Color(0xFFFECACA), Color(0xFFB91C1C), Color(0x80EF4444)),
+                BlockThemeColors(Color(0xFF8B5CF6), Color(0xFFDDD6FE), Color(0xFF6D28D9), Color(0x808B5CF6))
+            )
+        )
+
+        val GOLDEN_DARK = GameTheme(
+            id = "golden",
+            name = "Golden Ingot",
+            price = 700,
+            isDark = true,
+            blockStyle = BlockStyle.GOLDEN,
+            bgGradientStart = Color(0xFF1C1504),
+            bgGradientEnd = Color(0xFF0E0B02),
+            boardBg = Color(0xFF261D07),
+            gridBorder = Color(0xFF4A3B12),
+            cellEmptyBg = Color(0xFF161103),
+            cardBg = Color(0xFF261D07),
+            cardBorder = Color(0xFF4A3B12),
+            textColorPrimary = Color(0xFFFEF3C7),
+            textColorSecondary = Color(0xFFFDE68A),
+            accentColor = Color(0xFFFFD54F),
+            blockPalettes = listOf(
+                BlockThemeColors(Color(0xFFFFC107), Color(0xFFFFF3B0), Color(0xFFB28704), Color(0x99FFC107)),
+                BlockThemeColors(Color(0xFFFFB300), Color(0xFFFFE082), Color(0xFFC68400), Color(0x99FFB300)),
+                BlockThemeColors(Color(0xFFFFD54F), Color(0xFFFFF9C4), Color(0xFFFFA000), Color(0x99FFD54F)),
+                BlockThemeColors(Color(0xFF00E676), Color(0xFFB9F6CA), Color(0xFF00A152), Color(0x9900E676)),
+                BlockThemeColors(Color(0xFF00E5FF), Color(0xFFB8F9FF), Color(0xFF009EB0), Color(0x9900E5FF)),
+                BlockThemeColors(Color(0xFFFF5252), Color(0xFFFF8A80), Color(0xFFC51162), Color(0x99FF5252)),
+                BlockThemeColors(Color(0xFFE040FB), Color(0xFFEA80FC), Color(0xFFAA00FF), Color(0x99E040FB))
+            )
+        )
+
         val CLASSIC = CLASSIC_DARK
         val NEON = NEON_DARK
         val CANDY = CANDY_DARK
@@ -447,8 +580,10 @@ data class GameTheme(
         val GLASS = GLASS_DARK
         val PASTEL = PASTEL_DARK
         val DARK_SPACE = DARK_SPACE_DARK
+        val STONE = STONE_DARK
+        val GOLDEN = GOLDEN_DARK
 
-        val ALL_THEMES = listOf(CLASSIC, NEON, CANDY, WOOD, GLASS, PASTEL, DARK_SPACE)
+        val ALL_THEMES = listOf(CLASSIC, NEON, CANDY, WOOD, GLASS, PASTEL, DARK_SPACE, STONE, GOLDEN)
 
         fun findById(id: String, isDarkMode: Boolean = true): GameTheme {
             val base = ALL_THEMES.find { it.id == id } ?: CLASSIC

@@ -328,4 +328,34 @@ class GameEngineTest {
         assertEquals(3, tripleClear.totalLines)
         assertTrue(tripleClear.isMultiLine)
     }
+
+    @Test
+    fun themesIncludeDifferentBlockStylesAndUnlockingPrices() {
+        val themes = com.example.domain.model.GameTheme.ALL_THEMES
+        assertTrue(themes.size >= 9)
+
+        // Verify different block styles exist
+        val woodTheme = themes.find { it.id == "wood" }
+        assertNotNull(woodTheme)
+        assertEquals(com.example.domain.model.BlockStyle.WOODEN, woodTheme?.blockStyle)
+        assertTrue((woodTheme?.price ?: 0) > 0)
+
+        val stoneTheme = themes.find { it.id == "stone" }
+        assertNotNull(stoneTheme)
+        assertEquals(com.example.domain.model.BlockStyle.STONE, stoneTheme?.blockStyle)
+        assertTrue((stoneTheme?.price ?: 0) > 0)
+
+        val goldenTheme = themes.find { it.id == "golden" }
+        assertNotNull(goldenTheme)
+        assertEquals(com.example.domain.model.BlockStyle.GOLDEN, goldenTheme?.blockStyle)
+        assertTrue((goldenTheme?.price ?: 0) > 0)
+
+        val glassTheme = themes.find { it.id == "glass" }
+        assertNotNull(glassTheme)
+        assertEquals(com.example.domain.model.BlockStyle.FROSTED_GLASS, glassTheme?.blockStyle)
+
+        val neonTheme = themes.find { it.id == "neon" }
+        assertNotNull(neonTheme)
+        assertEquals(com.example.domain.model.BlockStyle.CYBER_NEON, neonTheme?.blockStyle)
+    }
 }

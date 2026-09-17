@@ -215,7 +215,8 @@ fun ShapeCanvas(
                             drawScope = this,
                             topLeft = Offset(c * cellPx, r * cellPx),
                             size = Size(cellPx, cellPx),
-                            colors = blockColors
+                            colors = blockColors,
+                            style = theme.blockStyle
                         )
                     }
                 }

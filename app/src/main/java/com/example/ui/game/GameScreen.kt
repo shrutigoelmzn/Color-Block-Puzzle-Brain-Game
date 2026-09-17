@@ -551,6 +551,7 @@ fun GameScreen(
                                     topLeft = Offset(c * cellSize, r * cellSize),
                                     size = Size(cellSize, cellSize),
                                     colors = blockColors,
+                                    style = theme.blockStyle,
                                     alpha = 0.95f
                                 )
                             }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -40,12 +41,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.domain.model.GameTheme
+import com.example.ui.components.BlockRenderUtils
 import com.example.ui.game.GameViewModel
 import com.example.ui.theme.LocalThemeIsDark
 
@@ -177,29 +181,32 @@ private fun ThemeCard(
             modifier = Modifier.padding(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Theme preview palette swatch (5 mini blocks)
+            // Theme preview palette swatch (5 mini blocks rendered in actual theme box style)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(36.dp)
+                    .height(42.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(theme.cellEmptyBg)
-                    .padding(4.dp),
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 for (i in 0 until 5) {
                     val c = theme.getBlockColor(i)
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(c.main)
-                    )
+                    Canvas(modifier = Modifier.size(26.dp)) {
+                        BlockRenderUtils.drawBlock(
+                            drawScope = this,
+                            topLeft = Offset.Zero,
+                            size = Size(size.width, size.height),
+                            colors = c,
+                            style = theme.blockStyle
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = theme.name,
@@ -207,6 +214,22 @@ private fun ThemeCard(
                 fontWeight = FontWeight.Bold,
                 color = theme.textColorPrimary
             )
+
+            // Block Style badge (e.g. Wooden Box, Frosted Glass, etc.)
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = theme.accentColor.copy(alpha = 0.12f),
+                modifier = Modifier.padding(top = 2.dp)
+            ) {
+                Text(
+                    text = theme.blockStyle.displayName,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = theme.accentColor,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    fontSize = 10.sp
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
