@@ -143,12 +143,13 @@ object ScoreCalculator {
 
 object ComboManager {
     /**
-     * Increments combo if at least one line was cleared;
+     * Increments combo by linesCleared if at least one line was cleared
+     * (e.g. clearing 2 lines simultaneously awards +2 to the combo streak);
      * resets to 0 if no line was cleared.
      */
     fun updateCombo(currentCombo: Int, linesCleared: Int): Int {
         return if (linesCleared > 0) {
-            currentCombo + 1
+            currentCombo + linesCleared
         } else {
             0
         }

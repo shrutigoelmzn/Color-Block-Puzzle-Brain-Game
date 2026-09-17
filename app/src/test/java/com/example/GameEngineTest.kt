@@ -119,9 +119,11 @@ class GameEngineTest {
         // Combo 3 with 1 line: 100 * 2.0x multiplier = 200
         assertEquals(200, ScoreCalculator.calculateLineClearScore(linesCount = 1, combo = 3))
 
-        // Combo increment and reset
+        // Combo increment and reset (multi-line clearing awards combo equal to lines cleared)
         assertEquals(1, ComboManager.updateCombo(currentCombo = 0, linesCleared = 1))
         assertEquals(2, ComboManager.updateCombo(currentCombo = 1, linesCleared = 1))
+        assertEquals(2, ComboManager.updateCombo(currentCombo = 0, linesCleared = 2))
+        assertEquals(4, ComboManager.updateCombo(currentCombo = 1, linesCleared = 3))
         assertEquals(0, ComboManager.updateCombo(currentCombo = 3, linesCleared = 0))
     }
 
