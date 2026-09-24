@@ -94,6 +94,8 @@ dependencies {
   implementation(libs.play.services.ads)
   implementation(libs.unity.ads)
   implementation(libs.play.services.ads.mediation.unity)
+  implementation(libs.inmobi.ads.kotlin)
+  implementation(libs.play.services.ads.mediation.inmobi)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)

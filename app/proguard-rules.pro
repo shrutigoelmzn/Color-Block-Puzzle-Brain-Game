@@ -40,4 +40,10 @@
     @com.google.firebase.crashlytics.** *;
 }
 
+# InMobi Ads & Mediation Adapter rules
+-keep class com.inmobi.** { *; }
+-dontwarn com.inmobi.**
+-keep class com.google.ads.mediation.inmobi.** { *; }
+
+
 

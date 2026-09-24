@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object AdManager {
     private const val TAG = "AdManager"
+    private const val TAG_MEDIATION = "AdMediation"
 
     private var rewardedAd: RewardedAd? = null
     private var isRewardedAdLoading = AtomicBoolean(false)
@@ -43,7 +44,7 @@ object AdManager {
     fun initialize(context: Context) {
         if (isInitializing.getAndSet(true)) return
 
-        Log.i(TAG, "Initializing Google Mobile Ads SDK (AdMob)...")
+        Log.i(TAG_MEDIATION, "Initializing Google Mobile Ads SDK (AdMob)...")
         try {
             MobileAds.initialize(context) { initializationStatus ->
                 isMobileAdsInitialized.set(true)
@@ -51,36 +52,47 @@ object AdManager {
                 preloadAds(context)
             }
         } catch (e: Throwable) {
-            Log.e(TAG, "Failed to initialize AdMob: ${e.message}", e)
+            Log.e(TAG_MEDIATION, "Failed to initialize AdMob: ${e.message}", e)
             CrashReporter.recordException(e)
         }
     }
 
     /**
-     * Logs Google Mobile Ads SDK initialization and inspects mediation adapters (specifically Unity Ads).
+     * Logs Google Mobile Ads SDK initialization and inspects mediation adapters (Unity Ads & InMobi).
      */
     private fun logInitializationStatus(status: InitializationStatus) {
         val adapterMap = status.adapterStatusMap
-        Log.i(TAG, "Google Mobile Ads initialization completed. Registered mediation adapters count: ${adapterMap.size}")
+        Log.i(TAG_MEDIATION, "Google Mobile Ads initialization completed. Registered adapters count: ${adapterMap.size}")
 
         var unityAdapterFound = false
+        var inmobiAdapterFound = false
+
         adapterMap.forEach { (adapterClass, adapterStatus) ->
             val isReady = adapterStatus.initializationState == AdapterStatus.State.READY
             val stateStr = adapterStatus.initializationState.name
-            val logMessage = "Mediation Adapter: [$adapterClass] -> State: $stateStr, Description: '${adapterStatus.description}', Latency: ${adapterStatus.latency}ms"
+            val logMessage = "Adapter: [$adapterClass] -> State: $stateStr, Description: '${adapterStatus.description}', Latency: ${adapterStatus.latency}ms"
 
-            if (adapterClass.contains("unity", ignoreCase = true)) {
+            if (adapterClass.contains("inmobi", ignoreCase = true)) {
+                inmobiAdapterFound = true
+                Log.i(TAG_MEDIATION, "[INMOBI MEDIATION] $logMessage")
+            } else if (adapterClass.contains("unity", ignoreCase = true)) {
                 unityAdapterFound = true
-                Log.i(TAG, "[UNITY MEDIATION] $logMessage")
+                Log.i(TAG_MEDIATION, "[UNITY MEDIATION] $logMessage")
             } else {
-                Log.d(TAG, logMessage)
+                Log.d(TAG_MEDIATION, logMessage)
             }
         }
 
         if (!unityAdapterFound) {
             Log.i(
-                TAG,
-                "Unity mediation adapter not explicitly pre-initialized in adapter map (AdMob may initialize Unity Ads dynamically upon first ad request)."
+                TAG_MEDIATION,
+                "Unity mediation adapter not in pre-initialization map (AdMob will initialize dynamically upon ad request)."
+            )
+        }
+        if (!inmobiAdapterFound) {
+            Log.i(
+                TAG_MEDIATION,
+                "InMobi mediation adapter not in pre-initialization map (AdMob will initialize InMobi dynamically for Waterfall upon first ad request)."
             )
         }
     }
@@ -178,7 +190,12 @@ object AdManager {
 
                 override fun onAdShowedFullScreenContent() {
                     val adapterName = currentAd.responseInfo.mediationAdapterClassName ?: "AdMob"
-                    Log.i(TAG, "RewardedAd showed full screen content (Served by adapter: $adapterName)")
+                    val network = when {
+                        adapterName.contains("inmobi", ignoreCase = true) -> "InMobi"
+                        adapterName.contains("unity", ignoreCase = true) -> "Unity Ads"
+                        else -> "AdMob"
+                    }
+                    Log.i(TAG_MEDIATION, "RewardedAd showed full screen content (Network: $network, Adapter: $adapterName)")
                     AnalyticsHelper.logAdImpression("rewarded", AdConfig.rewardedAdUnitId, adapterName)
                 }
             }
@@ -268,7 +285,12 @@ object AdManager {
 
                 override fun onAdShowedFullScreenContent() {
                     val adapterName = currentAd.responseInfo.mediationAdapterClassName ?: "AdMob"
-                    Log.i(TAG, "InterstitialAd displayed full screen (Served by adapter: $adapterName)")
+                    val network = when {
+                        adapterName.contains("inmobi", ignoreCase = true) -> "InMobi"
+                        adapterName.contains("unity", ignoreCase = true) -> "Unity Ads"
+                        else -> "AdMob"
+                    }
+                    Log.i(TAG_MEDIATION, "InterstitialAd displayed full screen (Network: $network, Adapter: $adapterName)")
                     AnalyticsHelper.logAdImpression("interstitial", AdConfig.interstitialAdUnitId, adapterName)
                 }
             }
@@ -281,54 +303,73 @@ object AdManager {
     }
 
     /**
-     * Helper to log mediation ResponseInfo details, including winning network and waterfall chain.
+     * Helper to log mediation ResponseInfo details under AdMediation tag,
+     * including winning network, response ID, adapter responses, latency, and errors.
      */
     private fun logAdResponseInfo(adType: String, responseInfo: ResponseInfo?) {
         if (responseInfo == null) {
-            Log.d(TAG, "[$adType] ResponseInfo is null")
+            Log.d(TAG_MEDIATION, "[$adType] ResponseInfo is null")
             return
         }
 
-        Log.i(TAG, "[$adType] Winning mediation adapter: ${responseInfo.mediationAdapterClassName}")
+        val winningAdapter = responseInfo.mediationAdapterClassName ?: "AdMob"
+        val responseId = responseInfo.responseId ?: "N/A"
         val loadedAdapter = responseInfo.loadedAdapterResponseInfo
+
+        val networkIdentified = when {
+            winningAdapter.contains("inmobi", ignoreCase = true) -> "InMobi"
+            winningAdapter.contains("unity", ignoreCase = true) -> "Unity Ads"
+            winningAdapter.contains("google", ignoreCase = true) || winningAdapter.contains("admob", ignoreCase = true) -> "Google AdMob"
+            else -> winningAdapter
+        }
+
+        Log.i(TAG_MEDIATION, "==========================================================================")
+        Log.i(TAG_MEDIATION, "[SUCCESS] $adType LOADED successfully")
+        Log.i(TAG_MEDIATION, "[$adType] SERVED BY NETWORK: >>> $networkIdentified <<<")
+        Log.i(TAG_MEDIATION, "[$adType] mediationAdapterClassName: $winningAdapter")
+        Log.i(TAG_MEDIATION, "[$adType] responseId: $responseId")
+
         if (loadedAdapter != null) {
-            Log.i(
-                TAG,
-                "[$adType] Served by Ad Source: '${loadedAdapter.adSourceName}' (ID: ${loadedAdapter.adSourceId}, Instance: '${loadedAdapter.adSourceInstanceName}', Adapter Class: ${loadedAdapter.adapterClassName}, Latency: ${loadedAdapter.latencyMillis}ms)"
-            )
+            Log.i(TAG_MEDIATION, "[$adType] Loaded Ad Source Name: '${loadedAdapter.adSourceName}' (ID: ${loadedAdapter.adSourceId})")
+            Log.i(TAG_MEDIATION, "[$adType] Loaded Adapter Class: ${loadedAdapter.adapterClassName}")
+            Log.i(TAG_MEDIATION, "[$adType] Loaded Latency: ${loadedAdapter.latencyMillis}ms")
         }
 
         val adapterResponses = responseInfo.adapterResponses
         if (adapterResponses.isNotEmpty()) {
-            Log.d(TAG, "[$adType] Mediation mediation chain attempted (${adapterResponses.size} sources):")
+            Log.i(TAG_MEDIATION, "[$adType] Mediation candidate adapter responses (${adapterResponses.size} sources in auction/waterfall):")
             adapterResponses.forEachIndexed { index, info ->
-                val errorMsg = info.adError?.let { " -> FAILED: ${it.message} (code ${it.code})" } ?: " -> SUCCESS"
-                Log.d(TAG, "  [$index] ${info.adSourceName} (${info.adapterClassName})$errorMsg, latency: ${info.latencyMillis}ms")
+                val errorDesc = info.adError?.let { " -> FAILED: [Code ${it.code}, Domain '${it.domain}'] ${it.message}" } ?: " -> SUCCESS (Served this ad)"
+                Log.i(TAG_MEDIATION, "  [$index] Ad Source: '${info.adSourceName}' | Adapter: ${info.adapterClassName} | Latency: ${info.latencyMillis}ms$errorDesc")
             }
         }
+        Log.i(TAG_MEDIATION, "==========================================================================")
     }
 
     /**
-     * Helper to log mediation LoadAdError details.
+     * Helper to log mediation LoadAdError details under AdMediation tag.
      */
     private fun logLoadError(adType: String, loadAdError: LoadAdError) {
-        Log.w(
-            TAG,
-            "[$adType] Failed to load: ${loadAdError.message} (Code: ${loadAdError.code}, Domain: ${loadAdError.domain})"
-        )
+        Log.w(TAG_MEDIATION, "==========================================================================")
+        Log.w(TAG_MEDIATION, "[FAILURE] $adType FAILED TO LOAD")
+        Log.w(TAG_MEDIATION, "[$adType] Error Message: ${loadAdError.message}")
+        Log.w(TAG_MEDIATION, "[$adType] Error Code: ${loadAdError.code} | Domain: ${loadAdError.domain}")
+
         val responseInfo = loadAdError.responseInfo
         if (responseInfo != null) {
-            Log.w(TAG, "[$adType] Error Response ID: ${responseInfo.responseId}")
+            Log.w(TAG_MEDIATION, "[$adType] responseId: ${responseInfo.responseId ?: "N/A"}")
             val adapterResponses = responseInfo.adapterResponses
             if (adapterResponses.isNotEmpty()) {
-                Log.w(TAG, "[$adType] Mediation chain failures (${adapterResponses.size} sources):")
+                Log.w(TAG_MEDIATION, "[$adType] Candidate mediation adapter failures (${adapterResponses.size} sources):")
                 adapterResponses.forEachIndexed { index, info ->
+                    val err = info.adError
                     Log.w(
-                        TAG,
-                        "  [$index] Ad Source '${info.adSourceName}' (${info.adapterClassName}) failed: ${info.adError?.message} (code: ${info.adError?.code})"
+                        TAG_MEDIATION,
+                        "  [$index] Ad Source: '${info.adSourceName}' | Adapter: ${info.adapterClassName} | Latency: ${info.latencyMillis}ms | Error: [Code ${err?.code}, Domain '${err?.domain}'] ${err?.message}"
                     )
                 }
             }
         }
+        Log.w(TAG_MEDIATION, "==========================================================================")
     }
 }

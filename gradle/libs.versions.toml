@@ -40,6 +40,8 @@ playServicesGamesV2 = "20.1.2"
 playServicesAds = "23.6.0"
 unityAds = "4.12.5"
 unityAdapter = "4.12.5.0"
+inmobiAds = "10.8.0"
+inmobiAdapter = "10.8.0.0"
 firebaseBom = "34.17.0"
 firebaseCrashlyticsPlugin = "3.0.3"
 secretsGradlePlugin = "2.0.1"
@@ -87,6 +89,8 @@ play-services-games-v2 = { group = "com.google.android.gms", name = "play-servic
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 unity-ads = { group = "com.unity3d.ads", name = "unity-ads", version.ref = "unityAds" }
 play-services-ads-mediation-unity = { group = "com.google.ads.mediation", name = "unity", version.ref = "unityAdapter" }
+inmobi-ads-kotlin = { group = "com.inmobi.monetization", name = "inmobi-ads-kotlin", version.ref = "inmobiAds" }
+play-services-ads-mediation-inmobi = { group = "com.google.ads.mediation", name = "inmobi", version.ref = "inmobiAdapter" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraCamera2" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraLifecycle" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
