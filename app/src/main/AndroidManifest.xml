@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Required for Google Mobile Ads SDK and Unity Ads Mediation on Android 13+ (API 33+) -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <!-- Required for Firebase Cloud Messaging push notifications on Android 13+ (API 33+) -->
