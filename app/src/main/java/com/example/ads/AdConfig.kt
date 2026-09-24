@@ -13,7 +13,14 @@ import com.example.BuildConfig
  */
 object AdConfig {
     // -----------------------------------------------------------------------------------------
-    // OFFICIAL GOOGLE ADMOB TEST IDs (Used in DEBUG builds and whenever Release IDs are unset)
+    // TEST ADS TOGGLE:
+    // Set to false to use your REAL AdMob IDs (ca-app-pub-3628219835925816/...) and Mediation.
+    // Set to true to force Google's sample test ads.
+    // -----------------------------------------------------------------------------------------
+    const val FORCE_TEST_ADS = false
+
+    // -----------------------------------------------------------------------------------------
+    // OFFICIAL GOOGLE ADMOB TEST IDs
     // -----------------------------------------------------------------------------------------
     const val TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
     const val TEST_REWARDED_AD_ID = "ca-app-pub-3940256099942544/5224354917"
@@ -31,6 +38,17 @@ object AdConfig {
     // 3. Your Real Interstitial Ad Unit ID (shown when player completes level & clicks next)
     const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-3628219835925816/9254816677"
 
+    // -----------------------------------------------------------------------------------------
+    // UNITY ADS DIRECT FALLBACK CONFIGURATION
+    // When Google AdMob has ad serving limits, Unity Ads can load directly as fallback!
+    // -----------------------------------------------------------------------------------------
+    // Enter your Unity Game ID from Unity Dashboard -> Monetization (e.g. "5712345")
+    const val UNITY_GAME_ID = "800380171"
+    const val UNITY_REWARDED_PLACEMENT_ID = "Rewarded_Android"
+    const val UNITY_INTERSTITIAL_PLACEMENT_ID = "Interstitial_Android"
+    // CRITICAL for newly generated Unity accounts: Must be TRUE until the app is live on Play Store!
+    const val UNITY_TEST_MODE = true
+
     /**
      * Determines whether the app is running in debug mode.
      */
@@ -38,11 +56,11 @@ object AdConfig {
 
     /**
      * Returns the active Rewarded Ad Unit ID.
-     * Uses official test ID in debug builds or when release ID is not yet configured.
+     * Uses official test ID only if FORCE_TEST_ADS is true or release ID is not set.
      */
     val rewardedAdUnitId: String
         get() {
-            return if (isDebugMode || isPlaceholder(RELEASE_REWARDED_AD_ID)) {
+            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_REWARDED_AD_ID)) {
                 TEST_REWARDED_AD_ID
             } else {
                 RELEASE_REWARDED_AD_ID
@@ -51,11 +69,11 @@ object AdConfig {
 
     /**
      * Returns the active Interstitial Ad Unit ID.
-     * Uses official test ID in debug builds or when release ID is not yet configured.
+     * Uses official test ID only if FORCE_TEST_ADS is true or release ID is not set.
      */
     val interstitialAdUnitId: String
         get() {
-            return if (isDebugMode || isPlaceholder(RELEASE_INTERSTITIAL_AD_ID)) {
+            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_INTERSTITIAL_AD_ID)) {
                 TEST_INTERSTITIAL_AD_ID
             } else {
                 RELEASE_INTERSTITIAL_AD_ID
