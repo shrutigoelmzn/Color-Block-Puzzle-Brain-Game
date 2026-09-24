@@ -7,5 +7,7 @@
     <string name="leaderboard_timed_id">CgkInPnKoYoHEAIQAQ</string>
 
     <!-- Google Mobile Ads (AdMob) App ID: Debug uses Google test ID; replace with release App ID for production -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!--<string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>-->
+    <string name="admob_app_id">ca-app-pub-3628219835925816~9258686107</string>
+
 </resources>

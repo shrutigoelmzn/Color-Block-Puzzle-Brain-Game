@@ -23,13 +23,13 @@ object AdConfig {
     // PRODUCTION / RELEASE AdMob IDs (REPLACE THESE WITH YOUR REAL ADMOB IDs FOR GOOGLE PLAY)
     // -----------------------------------------------------------------------------------------
     // 1. Your Real AdMob Application ID (Also update in res/values/strings.xml -> admob_app_id)
-    const val RELEASE_APP_ID = "ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"
+    const val RELEASE_APP_ID = "ca-app-pub-3628219835925816~9258686107"
 
     // 2. Your Real Rewarded Ad Unit ID (shown when player needs a revive/life)
-    const val RELEASE_REWARDED_AD_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy"
+    const val RELEASE_REWARDED_AD_ID = "ca-app-pub-3628219835925816/9457996650"
 
     // 3. Your Real Interstitial Ad Unit ID (shown when player completes level & clicks next)
-    const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy"
+    const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-3628219835925816/9254816677"
 
     /**
      * Determines whether the app is running in debug mode.
