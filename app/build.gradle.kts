@@ -88,6 +88,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.fragment.ktx)
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.play.services.games.v2)
   implementation(libs.play.services.ads)
