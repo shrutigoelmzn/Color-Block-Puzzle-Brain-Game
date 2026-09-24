@@ -32,3 +32,12 @@
 -keep interface com.unity3d.services.** { *; }
 -keep class com.google.ads.mediation.unity.** { *; }
 
+# Firebase Crashlytics rules
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
+-keeppublicinterface *
+-keepclassmembers class * {
+    @com.google.firebase.crashlytics.** *;
+}
+
+

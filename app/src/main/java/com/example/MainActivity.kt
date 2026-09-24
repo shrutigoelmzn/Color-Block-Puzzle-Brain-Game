@@ -42,9 +42,36 @@ enum class Screen {
 }
 
 class MainActivity : ComponentActivity() {
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            android.util.Log.i("MainActivity", "POST_NOTIFICATIONS permission granted")
+        } else {
+            android.util.Log.w("MainActivity", "POST_NOTIFICATIONS permission denied")
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize Firebase Analytics & Crashlytics
+        com.example.analytics.AnalyticsHelper.initialize(this)
+        com.example.crashlytics.CrashReporter.log("MainActivity onCreate")
+
+        // Initialize Firebase Cloud Messaging (FCM)
+        com.example.notifications.FCMManager.initialize(this)
+        requestNotificationPermissionIfNeeded()
 
         // Initialize Google Play Games Services v2
         com.example.data.PlayGamesManager.initialize(this)

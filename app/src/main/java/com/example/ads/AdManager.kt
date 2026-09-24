@@ -3,6 +3,8 @@ package com.example.ads
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import com.example.analytics.AnalyticsHelper
+import com.example.crashlytics.CrashReporter
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -50,6 +52,7 @@ object AdManager {
             }
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to initialize AdMob: ${e.message}", e)
+            CrashReporter.recordException(e)
         }
     }
 
@@ -130,6 +133,7 @@ object AdManager {
             )
         } catch (e: Throwable) {
             Log.w(TAG, "Exception during RewardedAd.load: ${e.message}")
+            CrashReporter.recordException(e)
             isRewardedAdLoading.set(false)
         }
     }
@@ -173,14 +177,16 @@ object AdManager {
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    val adapterName = currentAd.responseInfo.mediationAdapterClassName
+                    val adapterName = currentAd.responseInfo.mediationAdapterClassName ?: "AdMob"
                     Log.i(TAG, "RewardedAd showed full screen content (Served by adapter: $adapterName)")
+                    AnalyticsHelper.logAdImpression("rewarded", AdConfig.rewardedAdUnitId, adapterName)
                 }
             }
 
             currentAd.show(activity) { rewardItem ->
                 Log.i(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
                 rewardEarned = true
+                AnalyticsHelper.logRewardedEarned(rewardItem.type, rewardItem.amount)
                 onUserEarnedReward()
             }
         } else {
@@ -230,6 +236,7 @@ object AdManager {
             )
         } catch (e: Throwable) {
             Log.w(TAG, "Exception during InterstitialAd.load: ${e.message}")
+            CrashReporter.recordException(e)
             isInterstitialAdLoading.set(false)
         }
     }
@@ -260,8 +267,9 @@ object AdManager {
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    val adapterName = currentAd.responseInfo.mediationAdapterClassName
+                    val adapterName = currentAd.responseInfo.mediationAdapterClassName ?: "AdMob"
                     Log.i(TAG, "InterstitialAd displayed full screen (Served by adapter: $adapterName)")
+                    AnalyticsHelper.logAdImpression("interstitial", AdConfig.interstitialAdUnitId, adapterName)
                 }
             }
             currentAd.show(activity)
