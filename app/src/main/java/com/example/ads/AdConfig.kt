@@ -38,17 +38,6 @@ object AdConfig {
     // 3. Your Real Interstitial Ad Unit ID (shown when player completes level & clicks next)
     const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-3628219835925816/9254816677"
 
-    // -----------------------------------------------------------------------------------------
-    // UNITY ADS DIRECT FALLBACK CONFIGURATION
-    // When Google AdMob has ad serving limits, Unity Ads can load directly as fallback!
-    // -----------------------------------------------------------------------------------------
-    // Enter your Unity Game ID from Unity Dashboard -> Monetization (e.g. "5712345")
-    const val UNITY_GAME_ID = "800380171"
-    const val UNITY_REWARDED_PLACEMENT_ID = "Rewarded_Android"
-    const val UNITY_INTERSTITIAL_PLACEMENT_ID = "Interstitial_Android"
-    // CRITICAL for newly generated Unity accounts: Must be TRUE until the app is live on Play Store!
-    const val UNITY_TEST_MODE = true
-
     /**
      * Determines whether the app is running in debug mode.
      */
