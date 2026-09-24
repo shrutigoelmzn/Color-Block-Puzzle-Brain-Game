@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "243272957084",
+    "project_id": "color-block-puzzle-brain-game",
+    "storage_bucket": "color-block-puzzle-brain-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243272957084:android:cde27f2b686202a3170159",
+        "android_client_info": {
+          "package_name": "com.sharma.color_block_building"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCOaKrJ1O61zFsV6CQPvmztlw3IsLbb-w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
