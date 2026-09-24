@@ -19,3 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Unity Ads & Mediation Adapter rules
+-keepattributes SourceFile,LineNumberTable
+-keepattributes JavascriptInterface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class com.unity3d.ads.** { *; }
+-keep interface com.unity3d.ads.** { *; }
+-keep class com.unity3d.services.** { *; }
+-keep interface com.unity3d.services.** { *; }
+-keep class com.google.ads.mediation.unity.** { *; }
+

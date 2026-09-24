@@ -8,6 +8,9 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.ResponseInfo
+import com.google.android.gms.ads.initialization.AdapterStatus
+import com.google.android.gms.ads.initialization.InitializationStatus
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
@@ -29,21 +32,53 @@ object AdManager {
     private val _isRewardedAdReady = MutableStateFlow(false)
     val isRewardedAdReady: StateFlow<Boolean> = _isRewardedAdReady.asStateFlow()
 
-    private val isInitialized = AtomicBoolean(false)
+    private val isInitializing = AtomicBoolean(false)
+    private val isMobileAdsInitialized = AtomicBoolean(false)
 
     /**
-     * Initializes Google Mobile Ads SDK on app startup.
+     * Initializes Google Mobile Ads SDK on app startup and logs mediation adapter statuses.
      */
     fun initialize(context: Context) {
-        if (isInitialized.getAndSet(true)) return
+        if (isInitializing.getAndSet(true)) return
 
+        Log.i(TAG, "Initializing Google Mobile Ads SDK (AdMob)...")
         try {
             MobileAds.initialize(context) { initializationStatus ->
-                Log.d(TAG, "AdMob MobileAds initialized: $initializationStatus")
+                isMobileAdsInitialized.set(true)
+                logInitializationStatus(initializationStatus)
                 preloadAds(context)
             }
         } catch (e: Throwable) {
-            Log.w(TAG, "Failed to initialize AdMob: ${e.message}")
+            Log.e(TAG, "Failed to initialize AdMob: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Logs Google Mobile Ads SDK initialization and inspects mediation adapters (specifically Unity Ads).
+     */
+    private fun logInitializationStatus(status: InitializationStatus) {
+        val adapterMap = status.adapterStatusMap
+        Log.i(TAG, "Google Mobile Ads initialization completed. Registered mediation adapters count: ${adapterMap.size}")
+
+        var unityAdapterFound = false
+        adapterMap.forEach { (adapterClass, adapterStatus) ->
+            val isReady = adapterStatus.initializationState == AdapterStatus.State.READY
+            val stateStr = adapterStatus.initializationState.name
+            val logMessage = "Mediation Adapter: [$adapterClass] -> State: $stateStr, Description: '${adapterStatus.description}', Latency: ${adapterStatus.latency}ms"
+
+            if (adapterClass.contains("unity", ignoreCase = true)) {
+                unityAdapterFound = true
+                Log.i(TAG, "[UNITY MEDIATION] $logMessage")
+            } else {
+                Log.d(TAG, logMessage)
+            }
+        }
+
+        if (!unityAdapterFound) {
+            Log.i(
+                TAG,
+                "Unity mediation adapter not explicitly pre-initialized in adapter map (AdMob may initialize Unity Ads dynamically upon first ad request)."
+            )
         }
     }
 
@@ -59,12 +94,18 @@ object AdManager {
      * Loads a Rewarded Ad.
      */
     fun loadRewardedAd(context: Context) {
+        if (!isMobileAdsInitialized.get()) {
+            Log.d(TAG, "MobileAds not yet initialized. Rewarded ad load will trigger after initialization.")
+            return
+        }
+
         if (rewardedAd != null || isRewardedAdLoading.get()) return
 
         isRewardedAdLoading.set(true)
         val adRequest = AdRequest.Builder().build()
         val adUnitId = AdConfig.rewardedAdUnitId
 
+        Log.d(TAG, "Requesting Rewarded Ad with Unit ID: $adUnitId")
         try {
             RewardedAd.load(
                 context,
@@ -75,14 +116,15 @@ object AdManager {
                         rewardedAd = ad
                         isRewardedAdLoading.set(false)
                         _isRewardedAdReady.value = true
-                        Log.d(TAG, "RewardedAd successfully loaded")
+                        Log.i(TAG, "RewardedAd successfully loaded!")
+                        logAdResponseInfo("RewardedAd", ad.responseInfo)
                     }
 
                     override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                         rewardedAd = null
                         isRewardedAdLoading.set(false)
                         _isRewardedAdReady.value = false
-                        Log.w(TAG, "RewardedAd failed to load: ${loadAdError.message} (code ${loadAdError.code})")
+                        logLoadError("RewardedAd", loadAdError)
                     }
                 }
             )
@@ -110,7 +152,7 @@ object AdManager {
 
             currentAd.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
-                    Log.d(TAG, "RewardedAd dismissed")
+                    Log.d(TAG, "RewardedAd dismissed by user")
                     rewardedAd = null
                     _isRewardedAdReady.value = false
                     loadRewardedAd(activity)
@@ -118,7 +160,7 @@ object AdManager {
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                    Log.w(TAG, "RewardedAd failed to show: ${adError.message}")
+                    Log.w(TAG, "RewardedAd failed to show: ${adError.message} (code: ${adError.code})")
                     rewardedAd = null
                     _isRewardedAdReady.value = false
                     loadRewardedAd(activity)
@@ -131,12 +173,13 @@ object AdManager {
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    Log.d(TAG, "RewardedAd showed full screen content")
+                    val adapterName = currentAd.responseInfo.mediationAdapterClassName
+                    Log.i(TAG, "RewardedAd showed full screen content (Served by adapter: $adapterName)")
                 }
             }
 
             currentAd.show(activity) { rewardItem ->
-                Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+                Log.i(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
                 rewardEarned = true
                 onUserEarnedReward()
             }
@@ -153,12 +196,18 @@ object AdManager {
      * Loads an Interstitial Ad.
      */
     fun loadInterstitialAd(context: Context) {
+        if (!isMobileAdsInitialized.get()) {
+            Log.d(TAG, "MobileAds not yet initialized. Interstitial ad load will trigger after initialization.")
+            return
+        }
+
         if (interstitialAd != null || isInterstitialAdLoading.get()) return
 
         isInterstitialAdLoading.set(true)
         val adRequest = AdRequest.Builder().build()
         val adUnitId = AdConfig.interstitialAdUnitId
 
+        Log.d(TAG, "Requesting Interstitial Ad with Unit ID: $adUnitId")
         try {
             InterstitialAd.load(
                 context,
@@ -168,13 +217,14 @@ object AdManager {
                     override fun onAdLoaded(ad: InterstitialAd) {
                         interstitialAd = ad
                         isInterstitialAdLoading.set(false)
-                        Log.d(TAG, "InterstitialAd loaded successfully")
+                        Log.i(TAG, "InterstitialAd loaded successfully!")
+                        logAdResponseInfo("InterstitialAd", ad.responseInfo)
                     }
 
                     override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                         interstitialAd = null
                         isInterstitialAdLoading.set(false)
-                        Log.w(TAG, "InterstitialAd failed to load: ${loadAdError.message}")
+                        logLoadError("InterstitialAd", loadAdError)
                     }
                 }
             )
@@ -203,14 +253,15 @@ object AdManager {
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                    Log.w(TAG, "InterstitialAd failed to show: ${adError.message}")
+                    Log.w(TAG, "InterstitialAd failed to show: ${adError.message} (code: ${adError.code})")
                     interstitialAd = null
                     loadInterstitialAd(activity)
                     onNextLevel()
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    Log.d(TAG, "InterstitialAd displayed")
+                    val adapterName = currentAd.responseInfo.mediationAdapterClassName
+                    Log.i(TAG, "InterstitialAd displayed full screen (Served by adapter: $adapterName)")
                 }
             }
             currentAd.show(activity)
@@ -218,6 +269,58 @@ object AdManager {
             // If ad not loaded or unavailable, proceed immediately
             loadInterstitialAd(activity)
             onNextLevel()
+        }
+    }
+
+    /**
+     * Helper to log mediation ResponseInfo details, including winning network and waterfall chain.
+     */
+    private fun logAdResponseInfo(adType: String, responseInfo: ResponseInfo?) {
+        if (responseInfo == null) {
+            Log.d(TAG, "[$adType] ResponseInfo is null")
+            return
+        }
+
+        Log.i(TAG, "[$adType] Winning mediation adapter: ${responseInfo.mediationAdapterClassName}")
+        val loadedAdapter = responseInfo.loadedAdapterResponseInfo
+        if (loadedAdapter != null) {
+            Log.i(
+                TAG,
+                "[$adType] Served by Ad Source: '${loadedAdapter.adSourceName}' (ID: ${loadedAdapter.adSourceId}, Instance: '${loadedAdapter.adSourceInstanceName}', Adapter Class: ${loadedAdapter.adapterClassName}, Latency: ${loadedAdapter.latencyMillis}ms)"
+            )
+        }
+
+        val adapterResponses = responseInfo.adapterResponses
+        if (adapterResponses.isNotEmpty()) {
+            Log.d(TAG, "[$adType] Mediation mediation chain attempted (${adapterResponses.size} sources):")
+            adapterResponses.forEachIndexed { index, info ->
+                val errorMsg = info.adError?.let { " -> FAILED: ${it.message} (code ${it.code})" } ?: " -> SUCCESS"
+                Log.d(TAG, "  [$index] ${info.adSourceName} (${info.adapterClassName})$errorMsg, latency: ${info.latencyMillis}ms")
+            }
+        }
+    }
+
+    /**
+     * Helper to log mediation LoadAdError details.
+     */
+    private fun logLoadError(adType: String, loadAdError: LoadAdError) {
+        Log.w(
+            TAG,
+            "[$adType] Failed to load: ${loadAdError.message} (Code: ${loadAdError.code}, Domain: ${loadAdError.domain})"
+        )
+        val responseInfo = loadAdError.responseInfo
+        if (responseInfo != null) {
+            Log.w(TAG, "[$adType] Error Response ID: ${responseInfo.responseId}")
+            val adapterResponses = responseInfo.adapterResponses
+            if (adapterResponses.isNotEmpty()) {
+                Log.w(TAG, "[$adType] Mediation chain failures (${adapterResponses.size} sources):")
+                adapterResponses.forEachIndexed { index, info ->
+                    Log.w(
+                        TAG,
+                        "  [$index] Ad Source '${info.adSourceName}' (${info.adapterClassName}) failed: ${info.adError?.message} (code: ${info.adError?.code})"
+                    )
+                }
+            }
         }
     }
 }
