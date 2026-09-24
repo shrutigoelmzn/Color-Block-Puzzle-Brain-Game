@@ -87,6 +87,8 @@ dependencies {
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.play.services.games.v2)
   implementation(libs.play.services.ads)
+  implementation(libs.unity.ads)
+  implementation(libs.play.services.ads.mediation.unity)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
