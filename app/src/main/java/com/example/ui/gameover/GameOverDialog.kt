@@ -52,7 +52,8 @@ fun GameOverDialog(
     onRestart: () -> Unit,
     onReviveWithAd: () -> Unit,
     onExtendTimeWithAd: () -> Unit = {},
-    onHome: () -> Unit
+    onHome: () -> Unit,
+    isRewardedAdReady: Boolean = false
 ) {
     Dialog(
         onDismissRequest = {},
@@ -223,8 +224,8 @@ fun GameOverDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Extra Time (+10s) via Rewarded Ad Section (when time finished in Timed mode without reaching target)
-                if (gameState.canTakeTimeExtensionWithAd) {
+                // Extra Time (+10s) via Rewarded Ad Section (only when ad has successfully loaded and is ready)
+                if (gameState.canTakeTimeExtensionWithAd && isRewardedAdReady) {
                     Button(
                         onClick = onExtendTimeWithAd,
                         modifier = Modifier
@@ -267,9 +268,9 @@ fun GameOverDialog(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                // Revive / Extra Life via Rewarded Ad Section
+                // Revive / Extra Life via Rewarded Ad Section (only when ad has successfully loaded and is ready)
                 if (gameState.revivesUsed < gameState.maxRevives) {
-                    if (gameState.canTakeReviveWithAd) {
+                    if (gameState.canTakeReviveWithAd && isRewardedAdReady) {
                         Button(
                             onClick = onReviveWithAd,
                             modifier = Modifier
@@ -311,7 +312,7 @@ fun GameOverDialog(
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                     }
-                    // When not near target score (e.g. < 80%), the 2nd life button is completely hidden as requested
+                    // When ad is not ready or not near target score, the button is hidden
                 } else {
                     // Both revives used
                     Surface(

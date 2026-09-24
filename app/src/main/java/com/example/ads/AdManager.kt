@@ -151,10 +151,10 @@ object AdManager {
     }
 
     /**
-     * Displays a Rewarded Ad for player revives.
+     * Displays a Rewarded Ad.
      *
      * @param activity The calling activity
-     * @param onUserEarnedReward Invoked when the user earns the reward
+     * @param onUserEarnedReward Invoked ONLY when the user earns the reward via rewarded callback
      * @param onAdDismissed Invoked when the ad finishes displaying or fails
      */
     fun showRewardedAd(
@@ -163,28 +163,22 @@ object AdManager {
         onAdDismissed: () -> Unit = {}
     ) {
         val currentAd = rewardedAd
-        if (currentAd != null) {
-            var rewardEarned = false
+        // Immediately consume the cached ad reference and update ready state so reward buttons hide right away
+        rewardedAd = null
+        _isRewardedAdReady.value = false
 
+        if (currentAd != null) {
             currentAd.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     Log.d(TAG, "RewardedAd dismissed by user")
-                    rewardedAd = null
-                    _isRewardedAdReady.value = false
                     loadRewardedAd(activity)
                     onAdDismissed()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     Log.w(TAG, "RewardedAd failed to show: ${adError.message} (code: ${adError.code})")
-                    rewardedAd = null
-                    _isRewardedAdReady.value = false
+                    // Do NOT grant reward on ad show failure
                     loadRewardedAd(activity)
-                    // If ad display fails on device, still grant the reward gracefully
-                    if (!rewardEarned) {
-                        rewardEarned = true
-                        onUserEarnedReward()
-                    }
                     onAdDismissed()
                 }
 
@@ -202,15 +196,13 @@ object AdManager {
 
             currentAd.show(activity) { rewardItem ->
                 Log.i(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
-                rewardEarned = true
                 AnalyticsHelper.logRewardedEarned(rewardItem.type, rewardItem.amount)
                 onUserEarnedReward()
             }
         } else {
-            // Fallback for offline / emulator test environments where ads cannot load
-            Log.d(TAG, "Rewarded ad not cached; granting fallback reward in test mode")
+            // Ad is not loaded / ready. Never grant fallback reward!
+            Log.w(TAG, "Rewarded ad requested but not available or loaded")
             loadRewardedAd(activity)
-            onUserEarnedReward()
             onAdDismissed()
         }
     }

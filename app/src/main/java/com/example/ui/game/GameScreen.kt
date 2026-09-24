@@ -95,6 +95,7 @@ fun GameScreen(
     onNavigateBack: () -> Unit
 ) {
     val gameState by viewModel.gameState.collectAsState()
+    val isRewardedAdReady by AdManager.isRewardedAdReady.collectAsState()
     val context = LocalContext.current
     val isDark = LocalThemeIsDark.current
     val rawTheme by viewModel.activeTheme.collectAsState()
@@ -441,49 +442,52 @@ fun GameScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Undo Button (1 Free Undo by default; watch rewarded ad for +2 Undos)
-                    BadgedBox(
-                        badge = {
-                            if (gameState.freeUndosRemaining > 0) {
-                                Badge(containerColor = Color(0xFF00E676)) {
-                                    Text(
-                                        text = "${gameState.freeUndosRemaining}",
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            } else {
-                                Badge(containerColor = Color(0xFFFF9800)) {
-                                    Text(
-                                        text = "+2 AD",
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 9.sp
-                                    )
+                    // Hidden if free undos are 0 and no rewarded ad is ready
+                    if (gameState.freeUndosRemaining > 0 || isRewardedAdReady) {
+                        BadgedBox(
+                            badge = {
+                                if (gameState.freeUndosRemaining > 0) {
+                                    Badge(containerColor = Color(0xFF00E676)) {
+                                        Text(
+                                            text = "${gameState.freeUndosRemaining}",
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                } else {
+                                    Badge(containerColor = Color(0xFFFF9800)) {
+                                        Text(
+                                            text = "+2 AD",
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 9.sp
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    ) {
-                        FilledTonalButton(
-                            onClick = {
-                                if (gameState.freeUndosRemaining > 0) {
-                                    viewModel.undo()
-                                } else {
-                                    showRewardedUndoDialog = true
-                                }
-                            },
-                            enabled = !gameState.isPaused && !gameState.isGameOver &&
-                                    (gameState.freeUndosRemaining == 0 || gameState.lastUndoSnapshot != null),
-                            shape = RoundedCornerShape(14.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Undo,
-                                contentDescription = "Undo",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (gameState.freeUndosRemaining > 0) "Undo" else "+2 Undos",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            FilledTonalButton(
+                                onClick = {
+                                    if (gameState.freeUndosRemaining > 0) {
+                                        viewModel.undo()
+                                    } else if (isRewardedAdReady) {
+                                        showRewardedUndoDialog = true
+                                    }
+                                },
+                                enabled = !gameState.isPaused && !gameState.isGameOver &&
+                                        (gameState.freeUndosRemaining == 0 || gameState.lastUndoSnapshot != null),
+                                shape = RoundedCornerShape(14.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                                    contentDescription = "Undo",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (gameState.freeUndosRemaining > 0) "Undo" else "+2 Undos",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
 
@@ -585,6 +589,7 @@ fun GameScreen(
             GameOverDialog(
                 gameState = gameState,
                 theme = theme,
+                isRewardedAdReady = isRewardedAdReady,
                 onRestart = {
                     if (gameState.mode == GameMode.TIMED) {
                         viewModel.retryCurrentTimedLevel()
@@ -599,8 +604,6 @@ fun GameScreen(
                             activity = activity,
                             onUserEarnedReward = { viewModel.reviveWithRewardedAd() }
                         )
-                    } else {
-                        viewModel.reviveWithRewardedAd()
                     }
                 },
                 onExtendTimeWithAd = {
@@ -610,8 +613,6 @@ fun GameScreen(
                             activity = activity,
                             onUserEarnedReward = { viewModel.extendTimeWithRewardedAd(10) }
                         )
-                    } else {
-                        viewModel.extendTimeWithRewardedAd(10)
                     }
                 },
                 onHome = { onNavigateBack() }
@@ -726,53 +727,54 @@ fun GameScreen(
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            val activity = context as? Activity
-                            if (activity != null) {
-                                AdManager.showRewardedAd(
-                                    activity = activity,
-                                    onUserEarnedReward = {
-                                        viewModel.grantRewardedUndos(2)
-                                        showRewardedUndoDialog = false
-                                    },
-                                    onAdDismissed = {
-                                        showRewardedUndoDialog = false
-                                    }
-                                )
-                            } else {
-                                viewModel.grantRewardedUndos(2)
-                                showRewardedUndoDialog = false
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = Color.White.copy(alpha = 0.25f),
-                            modifier = Modifier.padding(end = 6.dp)
+                    if (isRewardedAdReady) {
+                        Button(
+                            onClick = {
+                                val activity = context as? Activity
+                                if (activity != null) {
+                                    AdManager.showRewardedAd(
+                                        activity = activity,
+                                        onUserEarnedReward = {
+                                            viewModel.grantRewardedUndos(2)
+                                            showRewardedUndoDialog = false
+                                        },
+                                        onAdDismissed = {
+                                            showRewardedUndoDialog = false
+                                        }
+                                    )
+                                } else {
+                                    showRewardedUndoDialog = false
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
                         ) {
-                            Text(
-                                text = "AD",
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 9.sp,
-                                color = Color.White
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color.White.copy(alpha = 0.25f),
+                                modifier = Modifier.padding(end = 6.dp)
+                            ) {
+                                Text(
+                                    text = "AD",
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 9.sp,
+                                    color = Color.White
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
                             )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Watch Ad (+2 Undos)", fontWeight = FontWeight.Bold)
                         }
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Watch Ad (+2 Undos)", fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showRewardedUndoDialog = false }) {
-                        Text("Cancel")
+                        Text(if (isRewardedAdReady) "Cancel" else "Close")
                     }
                 }
             )
