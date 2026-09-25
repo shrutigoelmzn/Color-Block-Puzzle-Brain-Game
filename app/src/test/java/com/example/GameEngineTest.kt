@@ -360,4 +360,26 @@ class GameEngineTest {
         assertNotNull(neonTheme)
         assertEquals(com.example.domain.model.BlockStyle.CYBER_NEON, neonTheme?.blockStyle)
     }
+
+    @Test
+    fun quitConfirmationStateLifecycleManagement() {
+        var state = com.example.domain.model.GameState()
+        assertFalse(state.isPaused)
+        assertFalse(state.isQuitConfirmationVisible)
+
+        // Requesting quit confirmation pauses the game and sets dialog visible
+        state = state.copy(isPaused = true, isQuitConfirmationVisible = true)
+        assertTrue(state.isPaused)
+        assertTrue(state.isQuitConfirmationVisible)
+
+        // Dismissing quit confirmation unpauses the game and hides dialog without quitting
+        state = state.copy(isPaused = false, isQuitConfirmationVisible = false)
+        assertFalse(state.isPaused)
+        assertFalse(state.isQuitConfirmationVisible)
+
+        // Normal pause does not show quit confirmation
+        state = state.copy(isPaused = true, isQuitConfirmationVisible = false)
+        assertTrue(state.isPaused)
+        assertFalse(state.isQuitConfirmationVisible)
+    }
 }

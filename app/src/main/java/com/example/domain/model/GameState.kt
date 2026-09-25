@@ -57,6 +57,7 @@ data class GameState(
     val coins: Int = 0,
     val mode: GameMode = GameMode.CLASSIC,
     val isPaused: Boolean = false,
+    val isQuitConfirmationVisible: Boolean = false,
     val isGameOver: Boolean = false,
     val isNewBestScore: Boolean = false,
     val isNewBestCelebration: Boolean = false,

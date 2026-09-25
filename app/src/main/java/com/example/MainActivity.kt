@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -115,12 +116,9 @@ class MainActivity : ComponentActivity() {
 fun MainNavigation(
     gameViewModel: GameViewModel = viewModel()
 ) {
-    var currentScreen by remember { mutableStateOf(Screen.HOME) }
+    var currentScreen by rememberSaveable { mutableStateOf(Screen.HOME) }
 
-    BackHandler(enabled = currentScreen != Screen.HOME) {
-        if (currentScreen == Screen.GAME) {
-            gameViewModel.pauseGame()
-        }
+    BackHandler(enabled = currentScreen != Screen.HOME && currentScreen != Screen.GAME) {
         currentScreen = Screen.HOME
     }
 

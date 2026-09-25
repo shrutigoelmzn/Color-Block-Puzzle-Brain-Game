@@ -167,15 +167,48 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun pauseGame() {
         timerJob?.cancel()
         idleHintJob?.cancel()
-        _gameState.update { it.copy(isPaused = true) }
+        _gameState.update { it.copy(isPaused = true, isQuitConfirmationVisible = false) }
     }
 
     fun resumeGame() {
-        _gameState.update { it.copy(isPaused = false) }
+        _gameState.update { it.copy(isPaused = false, isQuitConfirmationVisible = false) }
         startIdleHintTimer()
         if (_gameState.value.mode == GameMode.TIMED && !_gameState.value.isGameOver) {
             startTimedModeCountdown()
         }
+    }
+
+    /**
+     * Triggered when the user presses back or taps the back navigation arrow during active gameplay.
+     * Pauses the game loop, cancels countdown timers, and shows the Quit Confirmation Dialog.
+     */
+    fun requestQuitConfirmation() {
+        timerJob?.cancel()
+        idleHintJob?.cancel()
+        _gameState.update { it.copy(isPaused = true, isQuitConfirmationVisible = true) }
+    }
+
+    /**
+     * Triggered when the user dismisses the Quit Confirmation Dialog (via Cancel/Resume, tapping outside,
+     * or pressing the back button). Dismisses the dialog, unpauses the game, and resumes timers.
+     * NEVER triggers navigation to the main menu.
+     */
+    fun dismissQuitConfirmation() {
+        _gameState.update { it.copy(isQuitConfirmationVisible = false, isPaused = false) }
+        startIdleHintTimer()
+        if (_gameState.value.mode == GameMode.TIMED && !_gameState.value.isGameOver) {
+            startTimedModeCountdown()
+        }
+    }
+
+    /**
+     * Triggered ONLY when the user explicitly clicks "Quit to Main Menu" on the dialog.
+     * Cleans up the game state before navigating back.
+     */
+    fun confirmQuit() {
+        timerJob?.cancel()
+        idleHintJob?.cancel()
+        _gameState.update { it.copy(isQuitConfirmationVisible = false, isPaused = false) }
     }
 
     fun dismissCelebration() {

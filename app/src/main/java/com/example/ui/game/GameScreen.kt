@@ -1,5 +1,6 @@
 package com.example.ui.game
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -74,6 +75,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -110,6 +112,33 @@ fun GameScreen(
     var dragTouchPositionInRoot by remember { mutableStateOf<Offset?>(null) }
     var showRewardedUndoDialog by remember { mutableStateOf(false) }
     val density = LocalDensity.current
+
+    // Handle device back button press in GameScreen:
+    // If quit confirmation or pause dialog is open, dismiss it and resume play (never auto-quit to main menu).
+    // If game is active, request quit confirmation so progress is not accidentally lost.
+    BackHandler(enabled = true) {
+        when {
+            showRewardedUndoDialog -> {
+                showRewardedUndoDialog = false
+            }
+            gameState.isQuitConfirmationVisible -> {
+                // Dismiss quit confirmation dialog and stay in the game; NEVER navigate to home
+                viewModel.dismissQuitConfirmation()
+            }
+            gameState.isPaused -> {
+                // Dismiss pause dialog and resume gameplay; NEVER navigate to home
+                viewModel.resumeGame()
+            }
+            gameState.isGameOver || gameState.isLevelCompleted || gameState.isDailyChallengeCompleted -> {
+                // Game already concluded; safely return to main menu
+                onNavigateBack()
+            }
+            else -> {
+                // Active game back press shows the persistent quit confirmation dialog
+                viewModel.requestQuitConfirmation()
+            }
+        }
+    }
 
     // Infinite transition for pulsing combo banner
     val infiniteTransition = rememberInfiniteTransition(label = "combo")
@@ -150,13 +179,13 @@ fun GameScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = {
-                        viewModel.pauseGame()
-                        onNavigateBack()
-                    }) {
+                    IconButton(
+                        onClick = { viewModel.requestQuitConfirmation() },
+                        modifier = Modifier.testTag("game_back_button")
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back to Menu",
+                            contentDescription = "Quit Game",
                             tint = theme.textColorPrimary
                         )
                     }
@@ -199,7 +228,10 @@ fun GameScreen(
                             )
                         }
 
-                        IconButton(onClick = { viewModel.pauseGame() }) {
+                        IconButton(
+                            onClick = { viewModel.pauseGame() },
+                            modifier = Modifier.testTag("game_pause_button")
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Pause,
                                 contentDescription = "Pause",
@@ -566,7 +598,18 @@ fun GameScreen(
         }
 
         // OVERLAYS & DIALOGS
-        if (gameState.isPaused) {
+        if (gameState.isQuitConfirmationVisible) {
+            QuitConfirmDialog(
+                theme = theme,
+                score = gameState.score,
+                linesCleared = gameState.linesClearedInGame,
+                onDismiss = { viewModel.dismissQuitConfirmation() },
+                onConfirmQuit = {
+                    viewModel.confirmQuit()
+                    onNavigateBack()
+                }
+            )
+        } else if (gameState.isPaused) {
             PauseDialog(
                 theme = theme,
                 score = gameState.score,
@@ -579,8 +622,8 @@ fun GameScreen(
                 onToggleSound = { viewModel.toggleSound() },
                 onToggleHaptics = { viewModel.toggleHaptics() },
                 onHome = {
-                    viewModel.resumeGame()
-                    onNavigateBack()
+                    // Show Quit Confirmation Dialog so progress is never lost by accident
+                    viewModel.requestQuitConfirmation()
                 }
             )
         }
