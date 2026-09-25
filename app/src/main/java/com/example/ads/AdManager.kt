@@ -2,6 +2,7 @@ package com.example.ads
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import com.example.analytics.AnalyticsHelper
 import com.example.crashlytics.CrashReporter
@@ -128,13 +129,32 @@ object AdManager {
     }
 
     /**
-     * Opens AdMob Ad Inspector.
+     * Recursively resolves the Activity from any Context (including Dialog ContextThemeWrapper).
+     */
+    fun findActivity(context: Context): Activity? {
+        var current: Context? = context
+        while (current is ContextWrapper) {
+            if (current is Activity) return current
+            current = current.baseContext
+        }
+        return current as? Activity
+    }
+
+    /**
+     * Opens AdMob Ad Inspector using any Context (resolves Activity automatically).
      * In Ad Inspector:
      * 1. Go to "Single ad source test".
      * 2. Select InMobi or Unity Ads.
      * 3. All subsequent test ad requests will test ONLY that mediation network!
      */
-    fun openAdInspector(activity: Activity, onClosed: ((error: String?) -> Unit)? = null) {
+    fun openAdInspector(context: Context, onClosed: ((error: String?) -> Unit)? = null) {
+        val activity = findActivity(context)
+        if (activity == null) {
+            val errMsg = "Cannot open Ad Inspector: Activity not found in context"
+            Log.e(TAG_MEDIATION, errMsg)
+            onClosed?.invoke(errMsg)
+            return
+        }
         try {
             MobileAds.openAdInspector(activity) { error ->
                 if (error != null) {

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FormatPaint
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MonetizationOn
@@ -185,6 +186,32 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
+                    // Ad Inspector Button for Testing Mediation (InMobi & Unity Ads)
+                    val homeContext = androidx.compose.ui.platform.LocalContext.current
+                    IconButton(
+                        onClick = {
+                            com.example.ads.AdManager.openAdInspector(homeContext)
+                        }
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = activeTheme.cardBg,
+                            border = BorderStroke(1.dp, Color(0xFF10B981)),
+                            modifier = Modifier.size(38.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Test Mediation (Ad Inspector)",
+                                    tint = Color(0xFF10B981),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
                     // Settings Button
                     IconButton(onClick = { showSettings = true }) {
                         Surface(
@@ -206,7 +233,43 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Quick Debug Banner for Ad Inspector
+            val currentContext = androidx.compose.ui.platform.LocalContext.current
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable {
+                        com.example.ads.AdManager.openAdInspector(currentContext)
+                    },
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFF10B981).copy(alpha = 0.15f),
+                border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.7f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF10B981),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Test Mediation: Tap to open Ad Inspector",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = activeTheme.textColorPrimary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // HERO BRANDING EMBLEM
             Box(
