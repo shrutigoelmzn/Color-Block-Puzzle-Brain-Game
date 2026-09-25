@@ -203,10 +203,11 @@ fun LeaderboardSection(
                     }
                 }
 
+                val playGamesTint = if (theme.isDark) Color(0xFF34D399) else Color(0xFF0F9D58)
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF0F9D58).copy(alpha = 0.15f),
-                    border = BorderStroke(1.dp, Color(0xFF0F9D58).copy(alpha = 0.5f)),
+                    color = playGamesTint.copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, playGamesTint.copy(alpha = 0.5f)),
                     modifier = Modifier.clickable {
                         if (activity != null) {
                             if (!isGmsAvailable) {
@@ -244,7 +245,7 @@ fun LeaderboardSection(
                         Icon(
                             imageVector = Icons.Default.SportsEsports,
                             contentDescription = "Play Games",
-                            tint = Color(0xFF0F9D58),
+                            tint = playGamesTint,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -252,7 +253,7 @@ fun LeaderboardSection(
                             text = "Play Games",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F9D58)
+                            color = playGamesTint
                         )
                     }
                 }
@@ -392,7 +393,7 @@ private fun LeaderboardRow(
                                     modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White
+                                    color = Color(0xFF3E1F00)
                                 )
                             }
                         }

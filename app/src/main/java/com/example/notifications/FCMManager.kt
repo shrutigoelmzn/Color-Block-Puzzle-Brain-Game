@@ -16,19 +16,15 @@ object FCMManager {
         try {
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (!task.isSuccessful) {
-                    Log.w(TAG, "Fetching FCM registration token failed: ${task.exception?.message}")
+                    Log.d(TAG, "FCM registration token not available or offline: ${task.exception?.message}")
                     return@addOnCompleteListener
                 }
 
                 val token = task.result
-                Log.i(TAG, "==================================================")
-                Log.i(TAG, "FIREBASE CLOUD MESSAGING (FCM) TOKEN:")
-                Log.i(TAG, token)
-                Log.i(TAG, "Copy this token to send test messages in Firebase Console")
-                Log.i(TAG, "==================================================")
+                Log.d(TAG, "FCM Token ready: $token")
             }
         } catch (e: Throwable) {
-            Log.w(TAG, "Error initializing FCM: ${e.message}")
+            Log.d(TAG, "FCM token fetch deferred: ${e.message}")
         }
     }
 }

@@ -269,7 +269,7 @@ fun HomeScreen(
                             text = "BEST SCORE",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF9800),
+                            color = if (activeTheme.isDark) Color(0xFFFFB300) else Color(0xFFB45309),
                             letterSpacing = 1.sp
                         )
                         Text(
@@ -332,7 +332,7 @@ fun HomeScreen(
                                 text = mode.displayName.uppercase(),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else activeTheme.textColorSecondary
+                                color = if (isSelected) activeTheme.onAccentColor else activeTheme.textColorSecondary
                             )
                         }
                     }
@@ -396,7 +396,7 @@ fun HomeScreen(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFB300)
+                                color = if (activeTheme.isDark) Color(0xFFFFD54F) else Color(0xFFB45309)
                             )
                         }
                     }
@@ -533,7 +533,7 @@ fun HomeScreen(
                                 text = if (dailyChallenge?.isCompleted == true) "Completed today! ⭐"
                                 else "Streak: ${dailyStreak?.currentStreak ?: 0} Days 🔥",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFFF9800),
+                                color = if (activeTheme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C),
                                 fontWeight = FontWeight.SemiBold
                             )
                         }

@@ -209,6 +209,7 @@ fun GameScreen(
 
                     // Best Score & Pause button
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        val bestColor = if (theme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C)
                         Column(
                             horizontalAlignment = Alignment.End,
                             modifier = Modifier.padding(end = 8.dp)
@@ -217,14 +218,14 @@ fun GameScreen(
                                 text = "BEST",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF9800),
+                                color = bestColor,
                                 letterSpacing = 1.sp
                             )
                             Text(
                                 text = "${gameState.bestScore}",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF9800)
+                                color = bestColor
                             )
                         }
 

@@ -184,7 +184,7 @@ fun LevelCompleteDialog(
                                 text = "+$rewardCoins",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFB300)
+                                color = if (theme.isDark) Color(0xFFFFD54F) else Color(0xFFB45309)
                             )
                         }
                     }

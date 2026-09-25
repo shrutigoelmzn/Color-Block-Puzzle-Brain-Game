@@ -135,7 +135,7 @@ fun DailyChallengeScreen(
                                 text = challenge.title.uppercase(),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFFFF9800)
+                                color = if (activeTheme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C)
                             )
                             if (challenge.isCompleted) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -220,7 +220,7 @@ fun DailyChallengeScreen(
                                         "${challenge.rewardCoins}",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFFFB300)
+                                        color = if (activeTheme.isDark) Color(0xFFFFD54F) else Color(0xFFB45309)
                                     )
                                 }
                             }
@@ -367,7 +367,7 @@ fun DailyChallengeScreen(
                                 text = "Current Streak: ${streak.currentStreak} Days 🔥",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF9800)
+                                color = if (activeTheme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C)
                             )
                             Text(
                                 text = "Best: ${streak.bestStreak} Days",

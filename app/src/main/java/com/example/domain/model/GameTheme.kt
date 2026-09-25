@@ -45,6 +45,7 @@ data class GameTheme(
     val textColorPrimary: Color = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A),
     val textColorSecondary: Color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
     val accentColor: Color = Color(0xFF4F46E5),
+    val onAccentColor: Color = if (isDark) Color(0xFF0F172A) else Color(0xFFFFFFFF),
     val blockPalettes: List<BlockThemeColors>
 ) {
     fun getBlockColor(colorId: Int): BlockThemeColors {
@@ -112,6 +113,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFF8FAFC),
             textColorSecondary = Color(0xFF94A3B8),
             accentColor = Color(0xFF38BDF8),
+            onAccentColor = Color(0xFF082F49),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFFFB300), Color(0xFFFFE082), Color(0xFFFF8F00), Color(0x66FFB300)),
                 BlockThemeColors(Color(0xFF00BCD4), Color(0xFF80DEEA), Color(0xFF0097A7), Color(0x6600BCD4)),
@@ -169,6 +171,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFF3E8FF),
             textColorSecondary = Color(0xFFC084FC),
             accentColor = Color(0xFF00F0FF),
+            onAccentColor = Color(0xFF002930),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFF00F0FF), Color(0xFFB3FBFF), Color(0xFF009BB3), Color(0x9900F0FF)),
                 BlockThemeColors(Color(0xFFFF0055), Color(0xFFFF99BB), Color(0xFFB3003B), Color(0x99FF0055)),
@@ -198,6 +201,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFF4C0519),
             textColorSecondary = Color(0xFF9F1239),
             accentColor = Color(0xFFF43F5E),
+            onAccentColor = Color.White,
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFFB7185), Color(0xFFFECDD3), Color(0xFFE11D48), Color(0x66FB7185)),
                 BlockThemeColors(Color(0xFFFBBF24), Color(0xFFFDE68A), Color(0xFFD97706), Color(0x66FBBF24)),
@@ -224,6 +228,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFFFE4EC),
             textColorSecondary = Color(0xFFF472B6),
             accentColor = Color(0xFFFF6584),
+            onAccentColor = Color(0xFF380010),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFFF6584), Color(0xFFFFBAC7), Color(0xFFC73D5A), Color(0x66FF6584)),
                 BlockThemeColors(Color(0xFFFFD166), Color(0xFFFFF0C2), Color(0xFFD4A02A), Color(0x66FFD166)),
@@ -281,6 +286,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFFDE8D7),
             textColorSecondary = Color(0xFFD7A888),
             accentColor = Color(0xFFCD853F),
+            onAccentColor = Color(0xFF241005),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFCD853F), Color(0xFFE3B888), Color(0xFF8B5A2B), Color(0x66CD853F)),
                 BlockThemeColors(Color(0xFFDEB887), Color(0xFFEED7BA), Color(0xFFB8860B), Color(0x66DEB887)),
@@ -338,6 +344,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFE0F2FE),
             textColorSecondary = Color(0xFF7DD3FC),
             accentColor = Color(0xFF38BDF8),
+            onAccentColor = Color(0xFF082F49),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFF64B5F6), Color(0xFFBBDEFB), Color(0xFF1976D2), Color(0x6664B5F6)),
                 BlockThemeColors(Color(0xFF4DD0E1), Color(0xFFB2EBF2), Color(0xFF0097A7), Color(0x664DD0E1)),
@@ -393,6 +400,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFF1F5F9),
             textColorSecondary = Color(0xFF94A3B8),
             accentColor = Color(0xFFA5B4FC),
+            onAccentColor = Color(0xFF1E1B4B),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFFFB7B2), Color(0xFFFFD9D6), Color(0xFFD97E78), Color(0x66FFB7B2)),
                 BlockThemeColors(Color(0xFFFFDAC1), Color(0xFFFFEDE0), Color(0xFFD9A685), Color(0x66FFDAC1)),
@@ -448,6 +456,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFF8FAFC),
             textColorSecondary = Color(0xFFA78BFA),
             accentColor = Color(0xFF00E5FF),
+            onAccentColor = Color(0xFF002229),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFF7000FF), Color(0xFFB066FF), Color(0xFF45009E), Color(0x997000FF)),
                 BlockThemeColors(Color(0xFF00E5FF), Color(0xFF80F2FF), Color(0xFF008FA0), Color(0x9900E5FF)),
@@ -478,6 +487,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFF1E293B),
             textColorSecondary = Color(0xFF475569),
             accentColor = Color(0xFF64748B),
+            onAccentColor = Color.White,
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFF64748B), Color(0xFF94A3B8), Color(0xFF334155), Color(0x6664748B)),
                 BlockThemeColors(Color(0xFF78716C), Color(0xFFA8A29E), Color(0xFF44403C), Color(0x6678716C)),
@@ -505,6 +515,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFE2E8F0),
             textColorSecondary = Color(0xFF94A3B8),
             accentColor = Color(0xFF94A3B8),
+            onAccentColor = Color(0xFF0F172A),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFF94A3B8), Color(0xFFCBD5E1), Color(0xFF475569), Color(0x6694A3B8)),
                 BlockThemeColors(Color(0xFFA8A29E), Color(0xFFD6D3D1), Color(0xFF57534E), Color(0x66A8A29E)),
@@ -535,6 +546,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFF78350F),
             textColorSecondary = Color(0xFFB45309),
             accentColor = Color(0xFFD97706),
+            onAccentColor = Color.White,
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFF59E0B), Color(0xFFFEF08A), Color(0xFFB45309), Color(0x80F59E0B)),
                 BlockThemeColors(Color(0xFFD97706), Color(0xFFFDE68A), Color(0xFF92400E), Color(0x80D97706)),
@@ -562,6 +574,7 @@ data class GameTheme(
             textColorPrimary = Color(0xFFFEF3C7),
             textColorSecondary = Color(0xFFFDE68A),
             accentColor = Color(0xFFFFD54F),
+            onAccentColor = Color(0xFF3E1F00),
             blockPalettes = listOf(
                 BlockThemeColors(Color(0xFFFFC107), Color(0xFFFFF3B0), Color(0xFFB28704), Color(0x99FFC107)),
                 BlockThemeColors(Color(0xFFFFB300), Color(0xFFFFE082), Color(0xFFC68400), Color(0x99FFB300)),

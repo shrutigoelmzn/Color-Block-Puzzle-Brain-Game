@@ -55,7 +55,7 @@ object PlayGamesManager {
             PlayGamesSdk.initialize(context)
             Log.d(TAG, "PlayGamesSdk initialized successfully")
         } catch (e: Throwable) {
-            Log.w(TAG, "PlayGamesSdk init skipped or failed: ${e.message}")
+            Log.d(TAG, "PlayGamesSdk init skipped or failed: ${e.message}")
         }
     }
 
@@ -83,12 +83,12 @@ object PlayGamesManager {
                 }
                 onComplete?.invoke(isAuthenticated)
             }.addOnFailureListener { e ->
-                Log.w(TAG, "Play Games auth check failed: ${e.message}")
+                Log.d(TAG, "Play Games auth check unavailable: ${e.message}")
                 _isSignedIn.value = false
                 onComplete?.invoke(false)
             }
         } catch (e: Throwable) {
-            Log.w(TAG, "Play Games authentication error: ${e.message}")
+            Log.d(TAG, "Play Games authentication error: ${e.message}")
             _isSignedIn.value = false
             onComplete?.invoke(false)
         }

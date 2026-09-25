@@ -271,8 +271,8 @@ private fun ThemeCard(
                             .height(38.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            containerColor = theme.accentColor,
+                            contentColor = theme.onAccentColor
                         )
                     ) {
                         Text(

@@ -124,10 +124,11 @@ fun GameOverDialog(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            val recordColor = if (theme.isDark) Color(0xFFFFB300) else Color(0xFFB45309)
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = null,
-                                tint = Color(0xFFFFB300),
+                                tint = recordColor,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -135,7 +136,7 @@ fun GameOverDialog(
                                 text = "NEW RECORD SCORE!",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFFFFB300),
+                                color = recordColor,
                                 letterSpacing = 0.5.sp
                             )
                         }
@@ -185,18 +186,19 @@ fun GameOverDialog(
                             .background(theme.cardBorder)
                     )
 
+                    val bestColor = if (theme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C)
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "BEST",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF9800)
+                            color = bestColor
                         )
                         Text(
                             text = "${gameState.bestScore}",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFFFF9800)
+                            color = bestColor
                         )
                     }
                 }
@@ -343,7 +345,7 @@ fun GameOverDialog(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = theme.accentColor,
-                        contentColor = Color.White
+                        contentColor = theme.onAccentColor
                     )
                 ) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = null)

@@ -17,6 +17,8 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.inmobi.sdk.InMobiSdk
+import com.inmobi.sdk.InMobiSdk.LogLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,16 +55,59 @@ object AdManager {
     fun initialize(context: Context) {
         if (isInitializing.getAndSet(true)) return
 
+        val appContext = context.applicationContext
+
+        // Set InMobi log level to DEBUG so the device ID and diagnostics are logged for testing registration
+        try {
+            InMobiSdk.setLogLevel(LogLevel.DEBUG)
+            Log.i(TAG_MEDIATION, "InMobiSdk.setLogLevel(LogLevel.DEBUG) configured successfully.")
+        } catch (e: Throwable) {
+            Log.d(TAG_MEDIATION, "InMobiSdk setLogLevel note: ${e.message}")
+        }
+
+        // Log device IDs to logcat for registering test device across platforms (AdMob, InMobi, Unity)
+        logTestingDeviceIds(appContext)
+
         Log.i(TAG_MEDIATION, "Initializing Google Mobile Ads SDK (AdMob)...")
         try {
-            MobileAds.initialize(context) { initializationStatus ->
+            MobileAds.initialize(appContext) { initializationStatus ->
                 isMobileAdsInitialized.set(true)
                 logInitializationStatus(initializationStatus)
-                preloadAds(context)
+                preloadAds(appContext)
             }
         } catch (e: Throwable) {
-            Log.e(TAG_MEDIATION, "Failed to initialize AdMob: ${e.message}", e)
-            CrashReporter.recordException(e)
+            Log.d(TAG_MEDIATION, "Failed to initialize AdMob: ${e.message}")
+        }
+    }
+
+    /**
+     * Logs device identifiers to logcat to help register the device as a test device
+     * across AdMob, InMobi, and Unity Ads developer consoles.
+     */
+    private fun logTestingDeviceIds(context: Context) {
+        try {
+            val androidId = android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.ANDROID_ID
+            ) ?: "UNKNOWN"
+
+            val hashedAndroidId = try {
+                val md = java.security.MessageDigest.getInstance("MD5")
+                val digest = md.digest(androidId.toByteArray())
+                digest.joinToString("") { "%02X".format(it) }
+            } catch (e: Throwable) {
+                "N/A"
+            }
+
+            Log.i("TEST_DEVICE_REGISTRATION", "==========================================================================")
+            Log.i("TEST_DEVICE_REGISTRATION", "DEVICE IDENTIFIERS FOR TESTING REGISTRATION:")
+            Log.i("TEST_DEVICE_REGISTRATION", "1. Android ID (SSAID): $androidId")
+            Log.i("TEST_DEVICE_REGISTRATION", "2. Hashed Device ID (AdMob format): $hashedAndroidId")
+            Log.i("TEST_DEVICE_REGISTRATION", "3. InMobi SDK: LogLevel.DEBUG active (look for 'InMobi' logcat tag)")
+            Log.i("TEST_DEVICE_REGISTRATION", "4. AdMob: Check logcat tag 'Ads' for 'setTestDeviceIds' with device ID")
+            Log.i("TEST_DEVICE_REGISTRATION", "==========================================================================")
+        } catch (e: Throwable) {
+            Log.d(TAG, "Error logging test device IDs: ${e.message}")
         }
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.domain.model.AppThemeMode
 import com.example.domain.model.GameMode
@@ -32,6 +33,9 @@ import com.example.ui.home.HomeScreen
 import com.example.ui.stats.StatsScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.themes.ThemesScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class Screen {
     HOME,
@@ -50,7 +54,7 @@ class MainActivity : ComponentActivity() {
         if (isGranted) {
             android.util.Log.i("MainActivity", "POST_NOTIFICATIONS permission granted")
         } else {
-            android.util.Log.w("MainActivity", "POST_NOTIFICATIONS permission denied")
+            android.util.Log.d("MainActivity", "POST_NOTIFICATIONS permission denied or dismissed")
         }
     }
 
@@ -66,21 +70,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Initialize Firebase Analytics & Crashlytics
-        com.example.analytics.AnalyticsHelper.initialize(this)
-        com.example.crashlytics.CrashReporter.log("MainActivity onCreate")
-
-        // Initialize Firebase Cloud Messaging (FCM)
-        com.example.notifications.FCMManager.initialize(this)
-        requestNotificationPermissionIfNeeded()
-
-        // Initialize Google Play Games Services v2
-        com.example.data.PlayGamesManager.initialize(this)
-        com.example.data.PlayGamesManager.checkAuthentication(this)
-
-        // Initialize Google Mobile Ads SDK (AdMob)
-        com.example.ads.AdManager.initialize(this)
-
+        // 1. Prioritize immediate UI composition and rendering
         setContent {
             val gameViewModel: GameViewModel = viewModel()
             val themeMode by gameViewModel.themeMode.collectAsState()
@@ -97,6 +87,47 @@ class MainActivity : ComponentActivity() {
                 ) {
                     MainNavigation(gameViewModel = gameViewModel)
                 }
+            }
+        }
+
+        // 2. Initialize external SDKs in background coroutines with staggering to avoid Binder buffer contention (-ENOSPC)
+        lifecycleScope.launch(Dispatchers.Default) {
+            // Analytics & Crash reporting
+            try {
+                com.example.analytics.AnalyticsHelper.initialize(applicationContext)
+                com.example.crashlytics.CrashReporter.log("MainActivity onCreate")
+            } catch (e: Throwable) {
+                android.util.Log.d("MainActivity", "Analytics init deferred: ${e.message}")
+            }
+
+            // Stagger next service
+            delay(500)
+
+            // Mobile Ads SDK (AdMob)
+            try {
+                com.example.ads.AdManager.initialize(applicationContext)
+            } catch (e: Throwable) {
+                android.util.Log.d("MainActivity", "AdManager init deferred: ${e.message}")
+            }
+
+            delay(400)
+
+            // Google Play Games Services v2
+            try {
+                com.example.data.PlayGamesManager.initialize(applicationContext)
+                com.example.data.PlayGamesManager.checkAuthentication(this@MainActivity)
+            } catch (e: Throwable) {
+                android.util.Log.d("MainActivity", "PlayGames init deferred: ${e.message}")
+            }
+
+            delay(300)
+
+            // Firebase Cloud Messaging (FCM) & Notification permissions
+            try {
+                com.example.notifications.FCMManager.initialize(applicationContext)
+                requestNotificationPermissionIfNeeded()
+            } catch (e: Throwable) {
+                android.util.Log.d("MainActivity", "FCM init deferred: ${e.message}")
             }
         }
     }

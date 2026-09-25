@@ -111,7 +111,7 @@ fun DailyChallengeCompleteDialog(
                     text = "\"${challenge.title}\"",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFF9800)
+                    color = if (theme.isDark) Color(0xFFFFB300) else Color(0xFFC2410C)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -135,7 +135,7 @@ fun DailyChallengeCompleteDialog(
                         text = "+$rewardCoins Coins Earned!",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFFFFB300)
+                        color = if (theme.isDark) Color(0xFFFFD54F) else Color(0xFFB45309)
                     )
                 }
 

@@ -191,7 +191,7 @@ fun QuitConfirmDialog(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = theme.accentColor,
-                        contentColor = Color.White
+                        contentColor = theme.onAccentColor
                     )
                 ) {
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
