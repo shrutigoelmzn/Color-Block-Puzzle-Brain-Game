@@ -10,6 +10,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.ResponseInfo
 import com.google.android.gms.ads.initialization.AdapterStatus
 import com.google.android.gms.ads.initialization.InitializationStatus
@@ -99,15 +100,56 @@ object AdManager {
                 "N/A"
             }
 
+            val testDeviceIds = mutableListOf<String>()
+            testDeviceIds.add(com.google.android.gms.ads.AdRequest.DEVICE_ID_EMULATOR)
+            if (hashedAndroidId != "N/A" && hashedAndroidId.isNotBlank()) {
+                testDeviceIds.add(hashedAndroidId)
+            }
+            try {
+                val requestConfiguration = RequestConfiguration.Builder()
+                    .setTestDeviceIds(testDeviceIds)
+                    .build()
+                MobileAds.setRequestConfiguration(requestConfiguration)
+            } catch (e: Throwable) {
+                Log.d(TAG_MEDIATION, "Error setting request configuration: ${e.message}")
+            }
+
             Log.i("TEST_DEVICE_REGISTRATION", "==========================================================================")
             Log.i("TEST_DEVICE_REGISTRATION", "DEVICE IDENTIFIERS FOR TESTING REGISTRATION:")
             Log.i("TEST_DEVICE_REGISTRATION", "1. Android ID (SSAID): $androidId")
             Log.i("TEST_DEVICE_REGISTRATION", "2. Hashed Device ID (AdMob format): $hashedAndroidId")
             Log.i("TEST_DEVICE_REGISTRATION", "3. InMobi SDK: LogLevel.DEBUG active (look for 'InMobi' logcat tag)")
-            Log.i("TEST_DEVICE_REGISTRATION", "4. AdMob: Check logcat tag 'Ads' for 'setTestDeviceIds' with device ID")
+            Log.i("TEST_DEVICE_REGISTRATION", "4. AdMob Test Device: Registered ($testDeviceIds)")
+            Log.i("TEST_DEVICE_REGISTRATION", "5. Ad Inspector: Use AdManager.openAdInspector(activity) or shake gesture")
             Log.i("TEST_DEVICE_REGISTRATION", "==========================================================================")
         } catch (e: Throwable) {
             Log.d(TAG, "Error logging test device IDs: ${e.message}")
+        }
+    }
+
+    /**
+     * Opens AdMob Ad Inspector.
+     * In Ad Inspector:
+     * 1. Go to "Single ad source test".
+     * 2. Select InMobi or Unity Ads.
+     * 3. All subsequent test ad requests will test ONLY that mediation network!
+     */
+    fun openAdInspector(activity: Activity, onClosed: ((error: String?) -> Unit)? = null) {
+        try {
+            MobileAds.openAdInspector(activity) { error ->
+                if (error != null) {
+                    val errMsg = "Ad Inspector error [Code ${error.code}]: ${error.message}"
+                    Log.e(TAG_MEDIATION, errMsg)
+                    onClosed?.invoke(errMsg)
+                } else {
+                    Log.i(TAG_MEDIATION, "Ad Inspector closed successfully.")
+                    onClosed?.invoke(null)
+                }
+            }
+        } catch (e: Throwable) {
+            val errMsg = "Failed to open Ad Inspector: ${e.message}"
+            Log.e(TAG_MEDIATION, errMsg, e)
+            onClosed?.invoke(errMsg)
         }
     }
 
