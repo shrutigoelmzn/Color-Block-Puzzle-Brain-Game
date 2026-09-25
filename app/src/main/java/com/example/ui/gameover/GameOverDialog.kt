@@ -226,62 +226,19 @@ fun GameOverDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Extra Time (+10s) via Rewarded Ad Section (only when ad has successfully loaded and is ready)
-                if (gameState.canTakeTimeExtensionWithAd && isRewardedAdReady) {
-                    Button(
-                        onClick = onExtendTimeWithAd,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                            .testTag("extend_time_ad_button"),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF0284C7),
-                            contentColor = Color.White
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = Color.White.copy(alpha = 0.25f),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = "AD",
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 10.sp,
-                                color = Color.White
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "+10 SECONDS",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                // Revive / Extra Life via Rewarded Ad Section (only when ad has successfully loaded and is ready)
-                if (gameState.revivesUsed < gameState.maxRevives) {
-                    if (gameState.canTakeReviveWithAd && isRewardedAdReady) {
+                // Action Buttons: On Timeout -> ONLY +10s button; On Board Full -> ONLY Revive button
+                if (gameState.isTimeOutGameOver) {
+                    // Extra Time (+10s) via Rewarded Ad Section
+                    if (gameState.canTakeTimeExtensionWithAd && isRewardedAdReady) {
                         Button(
-                            onClick = onReviveWithAd,
+                            onClick = onExtendTimeWithAd,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp)
-                                .testTag("revive_ad_button"),
+                                .testTag("extend_time_ad_button"),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF10B981),
+                                containerColor = Color(0xFF0284C7),
                                 contentColor = Color.White
                             ),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
@@ -301,38 +258,101 @@ fun GameOverDialog(
                                 )
                             }
                             Icon(
-                                imageVector = Icons.Default.PlayArrow,
+                                imageVector = Icons.Default.Timer,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "REVIVE",
+                                text = "+10 SECONDS",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
+                    } else if (gameState.timeExtensionsUsed >= gameState.maxTimeExtensions) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = theme.cellEmptyBg.copy(alpha = 0.5f)
+                        ) {
+                            Text(
+                                text = "Max time extensions used (${gameState.timeExtensionsUsed} of ${gameState.maxTimeExtensions})",
+                                modifier = Modifier.padding(8.dp),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = theme.textColorSecondary,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     }
-                    // When ad is not ready or not near target score, the button is hidden
                 } else {
-                    // Both revives used
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        color = theme.cellEmptyBg.copy(alpha = 0.5f)
-                    ) {
-                        Text(
-                            text = "Max lives used (2 of 2) for this level",
-                            modifier = Modifier.padding(8.dp),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = theme.textColorSecondary,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                    // Revive / Extra Life via Rewarded Ad Section (Board full / no moves left)
+                    if (gameState.revivesUsed < gameState.maxRevives) {
+                        if (gameState.canTakeReviveWithAd && isRewardedAdReady) {
+                            Button(
+                                onClick = onReviveWithAd,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp)
+                                    .testTag("revive_ad_button"),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF10B981),
+                                    contentColor = Color.White
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color.White.copy(alpha = 0.25f),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "AD",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 10.sp,
+                                        color = Color.White
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "REVIVE (CLEAR 2 LINES)",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    } else {
+                        // Both revives used
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = theme.cellEmptyBg.copy(alpha = 0.5f)
+                        ) {
+                            Text(
+                                text = "Max lives used (2 of 2) for this level",
+                                modifier = Modifier.padding(8.dp),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = theme.textColorSecondary,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     }
                 }
 

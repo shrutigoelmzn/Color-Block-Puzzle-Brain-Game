@@ -642,7 +642,7 @@ fun GameScreen(
                     }
                 },
                 onReviveWithAd = {
-                    val activity = context as? Activity
+                    val activity = AdManager.findActivity(context)
                     if (activity != null) {
                         AdManager.showRewardedAd(
                             activity = activity,
@@ -651,7 +651,7 @@ fun GameScreen(
                     }
                 },
                 onExtendTimeWithAd = {
-                    val activity = context as? Activity
+                    val activity = AdManager.findActivity(context)
                     if (activity != null) {
                         AdManager.showRewardedAd(
                             activity = activity,

@@ -101,11 +101,14 @@ data class GameState(
     /**
      * Can the player take a revive life by watching a rewarded ad?
      * Rule: Max 2 revives per level.
+     * Note: Only available when game over is due to board being full (no moves).
+     * If game over occurred due to timeout, only +10s time extension applies.
      * 1st revive: Can be taken any time.
      * 2nd revive: ONLY available if player scored at least 80% of target score.
      */
     val canTakeReviveWithAd: Boolean
         get() {
+            if (isTimeOutGameOver) return false
             if (revivesUsed >= maxRevives) return false
             if (revivesUsed == 0) return true
             return isNearTargetScore
