@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ads.BannerAdView
 import com.example.domain.model.AppThemeMode
 import com.example.domain.model.GameMode
 import com.example.ui.game.GameViewModel
@@ -361,7 +362,25 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // BANNER AD 1: Below Best Score
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = activeTheme.cardBg.copy(alpha = 0.95f),
+                border = BorderStroke(0.5.dp, activeTheme.cardBorder.copy(alpha = 0.5f)),
+                shadowElevation = 2.dp
+            ) {
+                BannerAdView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    backgroundColor = Color.Transparent
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // GAME MODE SELECTOR PILLS
             Surface(
@@ -621,6 +640,24 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // BANNER AD 2: Below Leaderboard Score
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = activeTheme.cardBg.copy(alpha = 0.95f),
+                border = BorderStroke(0.5.dp, activeTheme.cardBorder.copy(alpha = 0.5f)),
+                shadowElevation = 2.dp
+            ) {
+                BannerAdView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    backgroundColor = Color.Transparent
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             // 3-GRID QUICK NAV: Themes, Badges, Stats
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -666,7 +703,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Settings Dialog

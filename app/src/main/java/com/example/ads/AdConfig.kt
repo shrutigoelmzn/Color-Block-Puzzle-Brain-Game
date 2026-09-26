@@ -23,6 +23,7 @@ object AdConfig {
     // OFFICIAL GOOGLE ADMOB TEST IDs
     // -----------------------------------------------------------------------------------------
     const val TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+    const val TEST_BANNER_AD_ID = "ca-app-pub-3940256099942544/6300978111"
     const val TEST_REWARDED_AD_ID = "ca-app-pub-3940256099942544/5224354917"
     const val TEST_INTERSTITIAL_AD_ID = "ca-app-pub-3940256099942544/1033173712"
 
@@ -37,6 +38,9 @@ object AdConfig {
 
     // 3. Your Real Interstitial Ad Unit ID (shown when player completes level & clicks next)
     const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-3628219835925816/9254816677"
+
+    // 4. Your Real Banner Ad Unit ID (shown in main menu & game screen)
+    const val RELEASE_BANNER_AD_ID = ""
 
     /**
      * Determines whether the app is running in debug mode.
@@ -66,6 +70,19 @@ object AdConfig {
                 TEST_INTERSTITIAL_AD_ID
             } else {
                 RELEASE_INTERSTITIAL_AD_ID
+            }
+        }
+
+    /**
+     * Returns the active Banner Ad Unit ID.
+     * Uses official test ID only if FORCE_TEST_ADS is true or release ID is not set.
+     */
+    val bannerAdUnitId: String
+        get() {
+            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_BANNER_AD_ID)) {
+                TEST_BANNER_AD_ID
+            } else {
+                RELEASE_BANNER_AD_ID
             }
         }
 

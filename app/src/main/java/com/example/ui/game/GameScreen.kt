@@ -72,6 +72,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import com.example.ads.BannerAdView
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -540,6 +541,21 @@ fun GameScreen(
                         Text("Hint", fontSize = 13.sp)
                     }
                 }
+            }
+
+            // DOCKED ADAPTIVE BANNER AD (Game Screen)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = theme.cardBg.copy(alpha = 0.95f),
+                border = BorderStroke(0.5.dp, theme.cardBorder.copy(alpha = 0.4f)),
+                shadowElevation = 3.dp
+            ) {
+                BannerAdView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    backgroundColor = Color.Transparent
+                )
             }
         }
 
