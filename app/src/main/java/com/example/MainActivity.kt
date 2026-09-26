@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestNotificationPermissionIfNeeded() {
+        if (com.example.util.DeviceUtils.isEmulator()) return
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -103,9 +104,11 @@ class MainActivity : ComponentActivity() {
             // Stagger next service
             delay(500)
 
-            // Mobile Ads SDK (AdMob)
+            // Mobile Ads SDK (AdMob) - Must be invoked on the Main/UI thread with active Looper
             try {
-                com.example.ads.AdManager.initialize(applicationContext)
+                kotlinx.coroutines.withContext(Dispatchers.Main) {
+                    com.example.ads.AdManager.initialize(applicationContext)
+                }
             } catch (e: Throwable) {
                 android.util.Log.d("MainActivity", "AdManager init deferred: ${e.message}")
             }
@@ -115,7 +118,9 @@ class MainActivity : ComponentActivity() {
             // Google Play Games Services v2
             try {
                 com.example.data.PlayGamesManager.initialize(applicationContext)
-                com.example.data.PlayGamesManager.checkAuthentication(this@MainActivity)
+                kotlinx.coroutines.withContext(Dispatchers.Main) {
+                    com.example.data.PlayGamesManager.checkAuthentication(this@MainActivity)
+                }
             } catch (e: Throwable) {
                 android.util.Log.d("MainActivity", "PlayGames init deferred: ${e.message}")
             }
@@ -125,7 +130,9 @@ class MainActivity : ComponentActivity() {
             // Firebase Cloud Messaging (FCM) & Notification permissions
             try {
                 com.example.notifications.FCMManager.initialize(applicationContext)
-                requestNotificationPermissionIfNeeded()
+                kotlinx.coroutines.withContext(Dispatchers.Main) {
+                    requestNotificationPermissionIfNeeded()
+                }
             } catch (e: Throwable) {
                 android.util.Log.d("MainActivity", "FCM init deferred: ${e.message}")
             }

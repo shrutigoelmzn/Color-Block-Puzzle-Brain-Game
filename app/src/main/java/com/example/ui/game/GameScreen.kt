@@ -543,20 +543,17 @@ fun GameScreen(
                 }
             }
 
-            // DOCKED ADAPTIVE BANNER AD (Game Screen)
-            Surface(
+            // DOCKED ADAPTIVE BANNER AD (Game Screen - only visible when ad actually loads)
+            BannerAdView(
                 modifier = Modifier.fillMaxWidth(),
-                color = theme.cardBg.copy(alpha = 0.95f),
-                border = BorderStroke(0.5.dp, theme.cardBorder.copy(alpha = 0.4f)),
-                shadowElevation = 3.dp
-            ) {
-                BannerAdView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp),
-                    backgroundColor = Color.Transparent
-                )
-            }
+                backgroundColor = theme.cardBg.copy(alpha = 0.95f),
+                borderColor = theme.cardBorder.copy(alpha = 0.4f),
+                borderWidth = 0.5.dp,
+                shape = RoundedCornerShape(12.dp),
+                shadowElevation = 3.dp,
+                topSpacing = 2.dp,
+                bottomSpacing = 2.dp
+            )
         }
 
         // FLOATING DRAGGED SHAPE OVERLAY

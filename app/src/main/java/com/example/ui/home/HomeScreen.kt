@@ -185,33 +185,7 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // Ad Inspector Button for Testing Mediation (InMobi & Unity Ads)
-                    val homeContext = androidx.compose.ui.platform.LocalContext.current
-                    IconButton(
-                        onClick = {
-                            com.example.ads.AdManager.openAdInspector(homeContext)
-                        }
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = activeTheme.cardBg,
-                            border = BorderStroke(1.dp, Color(0xFF10B981)),
-                            modifier = Modifier.size(38.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "Test Mediation (Ad Inspector)",
-                                    tint = Color(0xFF10B981),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     // Settings Button
                     IconButton(onClick = { showSettings = true }) {
@@ -234,43 +208,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Quick Debug Banner for Ad Inspector
-            val currentContext = androidx.compose.ui.platform.LocalContext.current
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable {
-                        com.example.ads.AdManager.openAdInspector(currentContext)
-                    },
-                shape = RoundedCornerShape(12.dp),
-                color = Color(0xFF10B981).copy(alpha = 0.15f),
-                border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.7f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = Color(0xFF10B981),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Test Mediation: Tap to open Ad Inspector",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = activeTheme.textColorPrimary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // HERO BRANDING EMBLEM
             Box(
@@ -362,25 +300,17 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // BANNER AD 1: Below Best Score
-            Surface(
+            // BANNER AD: Below Best Score (only visible when ad actually loads)
+            BannerAdView(
                 modifier = Modifier.fillMaxWidth(),
+                backgroundColor = activeTheme.cardBg.copy(alpha = 0.95f),
+                borderColor = activeTheme.cardBorder.copy(alpha = 0.5f),
+                borderWidth = 0.5.dp,
                 shape = RoundedCornerShape(16.dp),
-                color = activeTheme.cardBg.copy(alpha = 0.95f),
-                border = BorderStroke(0.5.dp, activeTheme.cardBorder.copy(alpha = 0.5f)),
-                shadowElevation = 2.dp
-            ) {
-                BannerAdView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    backgroundColor = Color.Transparent
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+                shadowElevation = 2.dp,
+                topSpacing = 14.dp,
+                bottomSpacing = 16.dp
+            )
 
             // GAME MODE SELECTOR PILLS
             Surface(
@@ -637,24 +567,6 @@ fun HomeScreen(
                 leaderboard = leaderboard,
                 theme = activeTheme
             )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // BANNER AD 2: Below Leaderboard Score
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = activeTheme.cardBg.copy(alpha = 0.95f),
-                border = BorderStroke(0.5.dp, activeTheme.cardBorder.copy(alpha = 0.5f)),
-                shadowElevation = 2.dp
-            ) {
-                BannerAdView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    backgroundColor = Color.Transparent
-                )
-            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
