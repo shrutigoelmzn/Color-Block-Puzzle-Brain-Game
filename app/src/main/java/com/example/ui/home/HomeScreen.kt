@@ -309,12 +309,12 @@ fun HomeScreen(
                 shape = RoundedCornerShape(16.dp),
                 shadowElevation = 2.dp,
                 topSpacing = 14.dp,
-                bottomSpacing = 16.dp
             )
 
             // GAME MODE SELECTOR PILLS
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 16.dp),
                 shape = RoundedCornerShape(20.dp),
                 color = activeTheme.cardBg,
                 border = BorderStroke(1.dp, activeTheme.cardBorder),

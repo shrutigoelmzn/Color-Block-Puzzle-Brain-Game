@@ -40,7 +40,7 @@ object AdConfig {
     const val RELEASE_INTERSTITIAL_AD_ID = "ca-app-pub-3628219835925816/9254816677"
 
     // 4. Your Real Banner Ad Unit ID (shown in main menu & game screen)
-    const val RELEASE_BANNER_AD_ID = ""
+    const val RELEASE_BANNER_AD_ID = "ca-app-pub-3628219835925816/4497314017"
 
     /**
      * Determines whether the app is running in debug mode.
