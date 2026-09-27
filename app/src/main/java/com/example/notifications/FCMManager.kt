@@ -13,6 +13,11 @@ object FCMManager {
     fun initialize(context: Context) {
         NotificationHelper.createNotificationChannel(context)
 
+        if (com.example.util.DeviceUtils.isEmulator()) {
+            Log.d(TAG, "Running in emulator; skipping remote FCM token fetch")
+            return
+        }
+
         try {
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (!task.isSuccessful) {

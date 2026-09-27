@@ -44,9 +44,13 @@ object PlayGamesManager {
 
     /**
      * Initializes Google Play Games SDK v2.
-     * Skips initialization safely if Google Play Services is unavailable.
+     * Skips initialization safely if Google Play Services is unavailable or in emulator.
      */
     fun initialize(context: Context) {
+        if (com.example.util.DeviceUtils.isEmulator()) {
+            Log.d(TAG, "Running in emulator; skipping PlayGamesSdk.initialize")
+            return
+        }
         if (!isGooglePlayServicesAvailable(context)) {
             Log.d(TAG, "Google Play Services not available; skipping PlayGamesSdk.initialize")
             return
@@ -64,6 +68,12 @@ object PlayGamesManager {
      */
     fun checkAuthentication(activity: Activity, onComplete: ((Boolean) -> Unit)? = null) {
         setActivity(activity)
+        if (com.example.util.DeviceUtils.isEmulator()) {
+            Log.d(TAG, "Running in emulator; skipping checkAuthentication")
+            _isSignedIn.value = false
+            onComplete?.invoke(false)
+            return
+        }
         if (!isGooglePlayServicesAvailable(activity)) {
             Log.d(TAG, "Google Play Services not available; skipping checkAuthentication")
             _isSignedIn.value = false

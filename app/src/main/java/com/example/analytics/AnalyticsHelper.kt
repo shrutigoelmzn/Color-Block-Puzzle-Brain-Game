@@ -13,8 +13,13 @@ object AnalyticsHelper {
     private var firebaseAnalytics: FirebaseAnalytics? = null
 
     fun initialize(context: Context) {
+        if (com.example.util.DeviceUtils.isEmulator()) {
+            Log.d(TAG, "Running in emulator: skipping Firebase Analytics initialization to prevent Binder buffer contention")
+            return
+        }
         try {
             firebaseAnalytics = FirebaseAnalytics.getInstance(context)
+            firebaseAnalytics?.setAnalyticsCollectionEnabled(true)
             Log.i(TAG, "Firebase Analytics initialized successfully.")
         } catch (e: Throwable) {
             Log.w(TAG, "Firebase Analytics initialization error: ${e.message}")

@@ -101,6 +101,8 @@ dependencies {
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.play.services.games.v2)
   implementation(libs.play.services.ads)
+  implementation(libs.play.app.update)
+  implementation(libs.play.app.update.ktx)
   // Third-party mediation disabled to prevent headless emulator rendernode & location crashes:
   // implementation(libs.unity.ads)
   // implementation(libs.play.services.ads.mediation.unity)

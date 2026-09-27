@@ -10,11 +10,14 @@ object CrashReporter {
     private const val TAG = "CrashReporter"
 
     private val crashlytics: FirebaseCrashlytics?
-        get() = try {
-            FirebaseCrashlytics.getInstance()
-        } catch (e: Throwable) {
-            Log.w(TAG, "FirebaseCrashlytics unavailable: ${e.message}")
-            null
+        get() {
+            if (com.example.util.DeviceUtils.isEmulator()) return null
+            return try {
+                FirebaseCrashlytics.getInstance()
+            } catch (e: Throwable) {
+                Log.w(TAG, "FirebaseCrashlytics unavailable: ${e.message}")
+                null
+            }
         }
 
     /**

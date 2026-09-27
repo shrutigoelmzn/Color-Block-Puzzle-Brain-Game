@@ -33,11 +33,33 @@
         <meta-data
             android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
             android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING"
+            android:value="true" />
+
+        <!-- Disable automatic Firebase Analytics on cold start to prevent IPC/Binder buffer overflow in emulators -->
+        <meta-data
+            android:name="firebase_analytics_collection_deactivated"
+            android:value="true" />
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
+            android:value="false" />
 
         <!-- Disable automatic Firebase Messaging token registration on cold start -->
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"
             android:value="false" />
+
+        <!-- Disable MobileAdsInitProvider and PlayGamesInitProvider from auto-initializing at cold start to prevent 5-second Binder IPC loop (-ENOSPC) -->
+        <provider
+            android:name="com.google.android.gms.ads.MobileAdsInitProvider"
+            tools:node="remove" />
+        <provider
+            android:name="com.google.android.gms.games.provider.PlayGamesInitProvider"
+            tools:node="remove" />
 
         <!-- Firebase Cloud Messaging default notification channel and icon -->
         <meta-data

@@ -10,7 +10,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -48,6 +52,12 @@ enum class Screen {
 
 class MainActivity : ComponentActivity() {
 
+    private val appUpdateLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        com.example.update.InAppUpdateManager.handleActivityResult(result.resultCode)
+    }
+
     private val notificationPermissionLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -71,10 +81,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // 1. Prioritize immediate UI composition and rendering
+        // 1. Initialize In-App Update Manager
+        com.example.update.InAppUpdateManager.initialize(applicationContext)
+
+        // 2. Prioritize immediate UI composition and rendering
         setContent {
             val gameViewModel: GameViewModel = viewModel()
             val themeMode by gameViewModel.themeMode.collectAsState()
+            val updateState by com.example.update.InAppUpdateManager.updateState.collectAsState()
+
             val isDark = when (themeMode) {
                 AppThemeMode.LIGHT -> false
                 AppThemeMode.DARK -> true
@@ -86,13 +101,47 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainNavigation(gameViewModel = gameViewModel)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        MainNavigation(gameViewModel = gameViewModel)
+
+                        // Floating In-App Update Banner for downloaded / downloading states
+                        com.example.ui.update.InAppUpdateFloatingBanner(
+                            updateState = updateState,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 16.dp)
+                        )
+
+                        // Dialog for available updates
+                        val currentUpdate = updateState
+                        if (currentUpdate is com.example.update.UpdateUIState.UpdateAvailable) {
+                            com.example.ui.update.UpdateAvailableDialog(
+                                updateState = currentUpdate,
+                                launcher = appUpdateLauncher,
+                                onDismiss = { com.example.update.InAppUpdateManager.dismissState() }
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        // 2. Initialize external SDKs in background coroutines with staggering to avoid Binder buffer contention (-ENOSPC)
+        // 3. Initialize external SDKs in background coroutines with staggering to avoid Binder buffer contention (-ENOSPC)
         lifecycleScope.launch(Dispatchers.Default) {
+            val isVirtual = com.example.util.DeviceUtils.isEmulator()
+            if (isVirtual) {
+                android.util.Log.i("MainActivity", "Running in emulator: skipping remote Google Play / Firebase SDK network initialization")
+                return@launch
+            }
+
+            // Check for in-app updates in background
+            delay(1200)
+            try {
+                com.example.update.InAppUpdateManager.checkForUpdate(this@MainActivity, isManualCheck = false)
+            } catch (e: Throwable) {
+                android.util.Log.d("MainActivity", "InAppUpdate check note: ${e.message}")
+            }
+
             // Analytics & Crash reporting
             try {
                 com.example.analytics.AnalyticsHelper.initialize(applicationContext)
@@ -144,9 +193,15 @@ class MainActivity : ComponentActivity() {
         com.example.data.PlayGamesManager.setActivity(this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        com.example.update.InAppUpdateManager.onResume(this, appUpdateLauncher)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         com.example.data.PlayGamesManager.setActivity(null)
+        com.example.update.InAppUpdateManager.unregisterListener()
     }
 }
 
