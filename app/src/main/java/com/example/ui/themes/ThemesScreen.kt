@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import com.example.ads.NativeAdCard
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -151,6 +153,22 @@ fun ThemesScreen(
                         userCoins = coins,
                         onEquip = { viewModel.selectTheme(themeItem.id) },
                         onUnlock = { viewModel.unlockTheme(themeItem) }
+                    )
+                }
+
+                // Native Ad Card placed within themes catalog
+                item(span = { GridItemSpan(2) }) {
+                    NativeAdCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        cardBg = activeTheme.cardBg,
+                        borderColor = activeTheme.cardBorder,
+                        accentColor = activeTheme.accentColor,
+                        textColorPrimary = activeTheme.textColorPrimary,
+                        textColorSecondary = activeTheme.textColorSecondary,
+                        headlineOverride = "Unlock New Color Themes!",
+                        testTag = "themes_native_ad_card"
                     )
                 }
             }

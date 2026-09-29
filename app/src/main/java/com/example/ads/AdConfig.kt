@@ -26,6 +26,7 @@ object AdConfig {
     const val TEST_BANNER_AD_ID = "ca-app-pub-3940256099942544/6300978111"
     const val TEST_REWARDED_AD_ID = "ca-app-pub-3940256099942544/5224354917"
     const val TEST_INTERSTITIAL_AD_ID = "ca-app-pub-3940256099942544/1033173712"
+    const val TEST_NATIVE_AD_ID = "ca-app-pub-3940256099942544/2247696110"
 
     // -----------------------------------------------------------------------------------------
     // PRODUCTION / RELEASE AdMob IDs (REPLACE THESE WITH YOUR REAL ADMOB IDs FOR GOOGLE PLAY)
@@ -41,6 +42,9 @@ object AdConfig {
 
     // 4. Your Real Banner Ad Unit ID (shown in main menu & game screen)
     const val RELEASE_BANNER_AD_ID = "ca-app-pub-3628219835925816/4497314017"
+
+    // 5. Your Real Native Ad Unit ID (shown in home, themes, badges, and stats)
+    const val RELEASE_NATIVE_AD_ID = "ca-app-pub-3628219835925816/INSERT_NATIVE_AD_ID_HERE"
 
     /**
      * Determines whether the app is running in debug mode.
@@ -86,7 +90,20 @@ object AdConfig {
             }
         }
 
+    /**
+     * Returns the active Native Ad Unit ID.
+     * Uses official test ID if debug mode, FORCE_TEST_ADS is true, or release ID is not set.
+     */
+    val nativeAdUnitId: String
+        get() {
+            return if (isDebugMode || FORCE_TEST_ADS || isPlaceholder(RELEASE_NATIVE_AD_ID)) {
+                TEST_NATIVE_AD_ID
+            } else {
+                RELEASE_NATIVE_AD_ID
+            }
+        }
+
     private fun isPlaceholder(id: String): Boolean {
-        return id.isBlank() || id.contains("xxxx", ignoreCase = true)
+        return id.isBlank() || id.contains("xxxx", ignoreCase = true) || id.contains("INSERT_", ignoreCase = true)
     }
 }

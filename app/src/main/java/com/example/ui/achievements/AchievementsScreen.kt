@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import com.example.ads.NativeAdCard
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -180,6 +181,21 @@ fun AchievementsScreen(
                             onClaim = { viewModel.claimMission(mission) }
                         )
                     }
+
+                    item {
+                        NativeAdCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            cardBg = activeTheme.cardBg,
+                            borderColor = activeTheme.cardBorder,
+                            accentColor = activeTheme.accentColor,
+                            textColorPrimary = activeTheme.textColorPrimary,
+                            textColorSecondary = activeTheme.textColorSecondary,
+                            headlineOverride = "Complete Missions & Earn Badges!",
+                            testTag = "missions_native_ad_card"
+                        )
+                    }
                 }
             } else {
                 // Achievements List
@@ -196,6 +212,21 @@ fun AchievementsScreen(
                             textColorSecondary = activeTheme.textColorSecondary,
                             accentColor = activeTheme.accentColor,
                             onClaim = { viewModel.claimAchievement(achievement) }
+                        )
+                    }
+
+                    item {
+                        NativeAdCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            cardBg = activeTheme.cardBg,
+                            borderColor = activeTheme.cardBorder,
+                            accentColor = activeTheme.accentColor,
+                            textColorPrimary = activeTheme.textColorPrimary,
+                            textColorSecondary = activeTheme.textColorSecondary,
+                            headlineOverride = "Unlock Exclusive Badges!",
+                            testTag = "achievements_native_ad_card"
                         )
                     }
                 }

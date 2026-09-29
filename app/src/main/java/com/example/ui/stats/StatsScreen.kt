@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import com.example.ads.NativeAdCard
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -201,6 +203,22 @@ fun StatsScreen(
                         cardBorder = activeTheme.cardBorder,
                         textColorPrimary = activeTheme.textColorPrimary,
                         textColorSecondary = activeTheme.textColorSecondary
+                    )
+                }
+
+                // Native Ad Card spanning across stats grid
+                item(span = { GridItemSpan(2) }) {
+                    NativeAdCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        cardBg = activeTheme.cardBg,
+                        borderColor = activeTheme.cardBorder,
+                        accentColor = activeTheme.accentColor,
+                        textColorPrimary = activeTheme.textColorPrimary,
+                        textColorSecondary = activeTheme.textColorSecondary,
+                        headlineOverride = "Beat Your High Score!",
+                        testTag = "stats_native_ad_card"
                     )
                 }
             }

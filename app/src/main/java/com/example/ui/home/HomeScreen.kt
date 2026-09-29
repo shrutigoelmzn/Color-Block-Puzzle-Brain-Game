@@ -63,7 +63,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ads.BannerAdView
+import com.example.ads.NativeAdCard
 import com.example.domain.model.AppThemeMode
 import com.example.domain.model.GameMode
 import com.example.ui.game.GameViewModel
@@ -300,15 +300,18 @@ fun HomeScreen(
                 }
             }
 
-            // BANNER AD: Below Best Score (only visible when ad actually loads)
-            BannerAdView(
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = activeTheme.cardBg.copy(alpha = 0.95f),
-                borderColor = activeTheme.cardBorder.copy(alpha = 0.5f),
-                borderWidth = 0.5.dp,
-                shape = RoundedCornerShape(16.dp),
-                shadowElevation = 2.dp,
-                topSpacing = 14.dp,
+            // NATIVE AD: Sleek themed card between Best Score & Game Modes
+            NativeAdCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 14.dp),
+                cardBg = activeTheme.cardBg,
+                borderColor = activeTheme.cardBorder,
+                accentColor = activeTheme.accentColor,
+                textColorPrimary = activeTheme.textColorPrimary,
+                textColorSecondary = activeTheme.textColorSecondary,
+                headlineOverride = "Color Block Master: Top Puzzle",
+                testTag = "home_native_ad_card"
             )
 
             // GAME MODE SELECTOR PILLS
