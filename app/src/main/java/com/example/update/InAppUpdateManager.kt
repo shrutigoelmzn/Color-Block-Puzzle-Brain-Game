@@ -165,27 +165,31 @@ object InAppUpdateManager {
                 val availability = appUpdateInfo.updateAvailability()
                 Log.d(TAG, "App update availability: $availability")
 
-                if (availability == UpdateAvailability.UPDATE_AVAILABLE) {
-                    val isFlexibleAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
-                    val isImmediateAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
-                    val stalenessDays = appUpdateInfo.clientVersionStalenessDays()
+                when (availability) {
+                    UpdateAvailability.UPDATE_AVAILABLE -> {
+                        val isFlexibleAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+                        val isImmediateAllowed = appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+                        val stalenessDays = appUpdateInfo.clientVersionStalenessDays()
 
-                    _updateState.value = UpdateUIState.UpdateAvailable(
-                        appUpdateInfo = appUpdateInfo,
-                        isFlexibleAllowed = isFlexibleAllowed,
-                        isImmediateAllowed = isImmediateAllowed,
-                        stalenessDays = stalenessDays
-                    )
-                    onResult?.invoke(true)
-                } else if (availability == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                    // Update already in progress
-                    Log.i(TAG, "Update in progress")
-                    _updateState.value = UpdateUIState.Downloading(0, 0, 0)
-                    onResult?.invoke(true)
-                } else {
-                    Log.d(TAG, "App is up to date (versionCode: ${BuildConfig.VERSION_CODE})")
-                    _updateState.value = UpdateUIState.UpToDate
-                    onResult?.invoke(false)
+                        _updateState.value = UpdateUIState.UpdateAvailable(
+                            appUpdateInfo = appUpdateInfo,
+                            isFlexibleAllowed = isFlexibleAllowed,
+                            isImmediateAllowed = isImmediateAllowed,
+                            stalenessDays = stalenessDays
+                        )
+                        onResult?.invoke(true)
+                    }
+                    UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
+                        // Update already in progress
+                        Log.i(TAG, "Update in progress")
+                        _updateState.value = UpdateUIState.Downloading(0, 0, 0)
+                        onResult?.invoke(true)
+                    }
+                    else -> {
+                        Log.d(TAG, "App is up to date (versionCode: ${BuildConfig.VERSION_CODE})")
+                        _updateState.value = UpdateUIState.UpToDate
+                        onResult?.invoke(false)
+                    }
                 }
             }?.addOnFailureListener { e ->
                 Log.d(TAG, "Check for update failed: ${e.message}")

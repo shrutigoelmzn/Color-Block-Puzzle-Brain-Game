@@ -12,12 +12,6 @@ import com.example.BuildConfig
  * publishing to Google Play.
  */
 object AdConfig {
-    // -----------------------------------------------------------------------------------------
-    // TEST ADS TOGGLE:
-    // Set to false to use your REAL AdMob IDs (ca-app-pub-3628219835925816/...) and Mediation.
-    // Set to true to force Google's sample test ads.
-    // -----------------------------------------------------------------------------------------
-    const val FORCE_TEST_ADS = false
 
     // -----------------------------------------------------------------------------------------
     // OFFICIAL GOOGLE ADMOB TEST IDs
@@ -44,7 +38,7 @@ object AdConfig {
     const val RELEASE_BANNER_AD_ID = "ca-app-pub-3628219835925816/4497314017"
 
     // 5. Your Real Native Ad Unit ID (shown in home, themes, badges, and stats)
-    const val RELEASE_NATIVE_AD_ID = "ca-app-pub-3628219835925816/INSERT_NATIVE_AD_ID_HERE"
+    const val RELEASE_NATIVE_AD_ID = "ca-app-pub-3628219835925816/9401782601"
 
     /**
      * Determines whether the app is running in debug mode.
@@ -57,7 +51,7 @@ object AdConfig {
      */
     val rewardedAdUnitId: String
         get() {
-            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_REWARDED_AD_ID)) {
+            return if (isDebugMode ||isPlaceholder(RELEASE_REWARDED_AD_ID)) {
                 TEST_REWARDED_AD_ID
             } else {
                 RELEASE_REWARDED_AD_ID
@@ -70,7 +64,7 @@ object AdConfig {
      */
     val interstitialAdUnitId: String
         get() {
-            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_INTERSTITIAL_AD_ID)) {
+            return if (isDebugMode ||isPlaceholder(RELEASE_INTERSTITIAL_AD_ID)) {
                 TEST_INTERSTITIAL_AD_ID
             } else {
                 RELEASE_INTERSTITIAL_AD_ID
@@ -83,7 +77,7 @@ object AdConfig {
      */
     val bannerAdUnitId: String
         get() {
-            return if (FORCE_TEST_ADS || isPlaceholder(RELEASE_BANNER_AD_ID)) {
+            return if (isDebugMode ||isPlaceholder(RELEASE_BANNER_AD_ID)) {
                 TEST_BANNER_AD_ID
             } else {
                 RELEASE_BANNER_AD_ID
@@ -96,7 +90,7 @@ object AdConfig {
      */
     val nativeAdUnitId: String
         get() {
-            return if (isDebugMode || FORCE_TEST_ADS || isPlaceholder(RELEASE_NATIVE_AD_ID)) {
+            return if (isDebugMode || isPlaceholder(RELEASE_NATIVE_AD_ID)) {
                 TEST_NATIVE_AD_ID
             } else {
                 RELEASE_NATIVE_AD_ID

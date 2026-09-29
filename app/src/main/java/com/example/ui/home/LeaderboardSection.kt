@@ -47,9 +47,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.ads.NativeAdCard
 import com.example.data.PlayGamesManager
 import com.example.domain.model.GameTheme
 import com.example.domain.model.LeaderboardEntry
+import com.example.ui.theme.LocalThemeIsDark
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -305,6 +307,19 @@ fun LeaderboardSection(
                     }
                 }
             }
+
+            NativeAdCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 14.dp),
+                cardBg = theme.cardBg,
+                borderColor = theme.cardBorder,
+                accentColor = theme.accentColor,
+                textColorPrimary = theme.textColorPrimary,
+                textColorSecondary = theme.textColorSecondary,
+                headlineOverride = "Color Block Master: Top Puzzle",
+                testTag = "home_native_ad_card"
+            )
         }
     }
 }

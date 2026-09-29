@@ -131,7 +131,7 @@ fun NativeAdCard(
         }
     }
 
-    if (nativeAd == null) {
+    /*if (nativeAd == null) {
         if (!adFailed) {
             SimulatedNativeAdCard(
                 modifier = modifier.testTag(testTag),
@@ -144,7 +144,7 @@ fun NativeAdCard(
             )
         }
         return
-    }
+    }*/
 
     val currentAd = nativeAd ?: return
     AndroidView(
