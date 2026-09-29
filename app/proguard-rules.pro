@@ -35,7 +35,6 @@
 # Firebase Crashlytics rules
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable
--keeppublicinterface *
 -keepclassmembers class * {
     @com.google.firebase.crashlytics.** *;
 }
