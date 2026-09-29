@@ -65,10 +65,13 @@ object AdManager {
         }
 
         try {
-            MobileAds.initialize(appContext) { _ ->
+            MobileAds.initialize(appContext) { initStatus ->
                 isMobileAdsInitialized.set(true)
                 _isMobileAdsReady.value = true
                 Log.i(TAG, "AdMob MobileAds initialized successfully on device")
+                initStatus.adapterStatusMap.forEach { (adapterClass, status) ->
+                    Log.i(TAG, "Mediation Adapter: $adapterClass -> State: ${status.initializationState}, Description: ${status.description}")
+                }
             }
         } catch (e: Throwable) {
             Log.d(TAG, "AdMob initialization note: ${e.message}")
