@@ -229,7 +229,7 @@ fun GameOverDialog(
                 // Action Buttons: On Timeout -> ONLY +10s button; On Board Full -> ONLY Revive button
                 if (gameState.isTimeOutGameOver) {
                     // Extra Time (+10s) via Rewarded Ad Section
-                    if (gameState.canTakeTimeExtensionWithAd && isRewardedAdReady) {
+                    if (gameState.canTakeTimeExtensionWithAd) {
                         Button(
                             onClick = onExtendTimeWithAd,
                             modifier = Modifier
@@ -292,7 +292,7 @@ fun GameOverDialog(
                 } else {
                     // Revive / Extra Life via Rewarded Ad Section (Board full / no moves left)
                     if (gameState.revivesUsed < gameState.maxRevives) {
-                        if (gameState.canTakeReviveWithAd && isRewardedAdReady) {
+                        if (gameState.canTakeReviveWithAd) {
                             Button(
                                 onClick = onReviveWithAd,
                                 modifier = Modifier

@@ -55,6 +55,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -113,6 +114,13 @@ fun GameScreen(
     var dragTouchPositionInRoot by remember { mutableStateOf<Offset?>(null) }
     var showRewardedUndoDialog by remember { mutableStateOf(false) }
     val density = LocalDensity.current
+
+    // Preload rewarded and interstitial ads immediately upon entering the game
+    LaunchedEffect(Unit) {
+        val activity = AdManager.findActivity(context) ?: (context as? Activity)
+        AdManager.loadRewardedAd(activity ?: context)
+        AdManager.loadInterstitialAd(activity ?: context)
+    }
 
     // Handle device back button press in GameScreen:
     // If quit confirmation or pause dialog is open, dismiss it and resume play (never auto-quit to main menu).
@@ -476,40 +484,38 @@ fun GameScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Undo Button (1 Free Undo by default; watch rewarded ad for +2 Undos)
-                    // Hidden if free undos are 0 and no rewarded ad is ready
-                    if (gameState.freeUndosRemaining > 0 || isRewardedAdReady) {
-                        BadgedBox(
-                            badge = {
-                                if (gameState.freeUndosRemaining > 0) {
-                                    Badge(containerColor = Color(0xFF00E676)) {
-                                        Text(
-                                            text = "${gameState.freeUndosRemaining}",
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                } else {
-                                    Badge(containerColor = Color(0xFFFF9800)) {
-                                        Text(
-                                            text = "+2 AD",
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 9.sp
-                                        )
-                                    }
+                    BadgedBox(
+                        badge = {
+                            if (gameState.freeUndosRemaining > 0) {
+                                Badge(containerColor = Color(0xFF00E676)) {
+                                    Text(
+                                        text = "${gameState.freeUndosRemaining}",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else {
+                                Badge(containerColor = Color(0xFFFF9800)) {
+                                    Text(
+                                        text = "+2 AD",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 9.sp
+                                    )
                                 }
                             }
+                        }
+                    ) {
+                        FilledTonalButton(
+                            onClick = {
+                                if (gameState.freeUndosRemaining > 0) {
+                                    viewModel.undo()
+                                } else {
+                                    showRewardedUndoDialog = true
+                                }
+                            },
+                            enabled = !gameState.isPaused && !gameState.isGameOver &&
+                                    (gameState.freeUndosRemaining == 0 || gameState.lastUndoSnapshot != null),
+                            shape = RoundedCornerShape(14.dp)
                         ) {
-                            FilledTonalButton(
-                                onClick = {
-                                    if (gameState.freeUndosRemaining > 0) {
-                                        viewModel.undo()
-                                    } else if (isRewardedAdReady) {
-                                        showRewardedUndoDialog = true
-                                    }
-                                },
-                                enabled = !gameState.isPaused && !gameState.isGameOver &&
-                                        (gameState.freeUndosRemaining == 0 || gameState.lastUndoSnapshot != null),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.Undo,
                                     contentDescription = "Undo",
@@ -523,7 +529,6 @@ fun GameScreen(
                                 )
                             }
                         }
-                    }
 
                     // Smart Hint Button
                     FilledTonalButton(
@@ -784,8 +789,7 @@ fun GameScreen(
                     }
                 },
                 confirmButton = {
-                    if (isRewardedAdReady) {
-                        Button(
+                    Button(
                             onClick = {
                                 val activity = context as? Activity
                                 if (activity != null) {
@@ -827,11 +831,10 @@ fun GameScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Watch Ad (+2 Undos)", fontWeight = FontWeight.Bold)
                         }
-                    }
                 },
                 dismissButton = {
                     TextButton(onClick = { showRewardedUndoDialog = false }) {
-                        Text(if (isRewardedAdReady) "Cancel" else "Close")
+                        Text("Cancel")
                     }
                 }
             )
